@@ -1,0 +1,12 @@
+{
+  "appName": "Tjob",
+  "navigation": {
+    "home": "Casa",
+    "jobs": "Trabajos",
+    "settings": "Configuración"
+  },
+  "home": {
+    "welcome": "Bienvenidos to %{appName}!",
+    "title": "Trabjo facil"
+  }
+}
