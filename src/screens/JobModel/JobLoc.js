@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import {useJob} from '../../Utils/JobContext';
 import {Dimensions, StyleSheet, Text, View} from 'react-native';
 import MapInput from '../../components/MapInput';
 import {useForm, Controller} from 'react-hook-form';
@@ -11,24 +12,22 @@ const radius = [
 ];
 
 const JobLoc = (props) => {
-  const {jobObj} = props.route.params;
+  const {isNewJob, jobObj, updJobObj} = useJob();
+  const [markerLoc, setMarkerLoc] = useState('');
 
-  const [job_id] = useState(jobObj.job_id);
-  const [markerLoc, setMarkerLoc] = useState(
-    jobObj.location ? jobObj.location : '',
-  );
+  jobObj.location && setMarkerLoc(jobObj.location);
 
-  const {errors, control, handleSubmit, trigger} = useForm({
+  const {errors, control, handleSubmit} = useForm({
     mode: 'onBlur',
   });
 
   const [region, setRegion] = useState({});
   const [markers, setMarkers] = useState([]);
-  const [address_components, setAddress_components] = useState([]);
 
   const onSubmit = (data) => {
-    console.log('data ', data);
-    updateJobLoc({job_id});
+    //updateJobLoc({job_id, markers, address_components});
+    updJobObj({jobObj});
+    isNewJob && props.setStepIsValid(true);
   };
 
   function updateState(location) {
@@ -38,24 +37,10 @@ const JobLoc = (props) => {
       latitudeDelta: 0.09,
       longitudeDelta: 0.09,
     });
+
     setMarkers([
       {
         coordinate: location,
-      },
-    ]);
-  }
-
-  function handleMapViewPress(e) {
-    setMarkers([
-      {
-        // although its an array only maintain one occurrence
-        coordinate: e.nativeEvent.coordinate,
-      },
-    ]);
-    setAddress_components([
-      {
-        // although its an array only maintain one occurrence
-        address_components: e.nativeEvent.address_components,
       },
     ]);
   }
@@ -65,15 +50,16 @@ const JobLoc = (props) => {
       latitude: loc.geometry.location.lat,
       longitude: loc.geometry.location.lng,
     });
-    setAddress_components([loc.address_components]);
+    //setAddress_components([loc.address_components]);
+    updJobObj('address_components', [loc.address_components]);
   }
 
   useEffect(() => {
     // console.log("address_components ", address_components)
-    if (markers.length > 0 && address_components.length > 0) {
-      setMarkerLoc(markers[0], address_components);
+    if (markers.length > 0 && jobObj.address_components.length > 0) {
+      setMarkerLoc(markers[0], jobObj.address_components);
     }
-  }, [markers, address_components]);
+  }, [markers, jobObj.address_components]);
 
   return (
     <View

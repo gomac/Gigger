@@ -1,12 +1,9 @@
 'use strict';
-import React, {useContext, useEffect, useMemo, useState} from 'react';
-import {View} from 'react-native';
+import React, {useState, useMemo} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createDrawerNavigator} from '@react-navigation/drawer';
-import auth from '@react-native-firebase/auth';
-
 import {Icon} from 'react-native-elements';
 import SideMenuIcon from './components/SideMenuIcon';
 import Jobs from './screens/Jobs';
@@ -15,7 +12,8 @@ import Splash from './screens/Splash';
 import FirebaseLogin from './FirebaseLogin';
 import LogOut from './FirebaseLogin/screens/LogOut';
 import {NetworkContext} from './Utils/NetworkProvider';
-import {AuthProvider, useAuth} from './Utils/context';
+import {AuthProvider, useAuth} from './Utils/AuthContext';
+import {JobProvider} from './Utils/JobContext';
 import {testProperties} from './Utils/TestProperties';
 import AddJobWizard from './screens/JobModel/AddJobWizard';
 import JobController from './screens/JobModel/JobController';
@@ -306,7 +304,9 @@ export default () => {
   return (
     <AuthProvider>
       <NavigationContainer>
-        <RootStackScreen />
+        <JobProvider>
+          <RootStackScreen />
+        </JobProvider>
       </NavigationContainer>
     </AuthProvider>
   );

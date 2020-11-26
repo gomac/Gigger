@@ -1,8 +1,8 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import auth from '@react-native-firebase/auth';
 
-export const AuthContext = React.createContext(null);
+const AuthContext = createContext(null);
 
 // user loaded in a context for easy access
 const AuthProvider = ({children}) => {

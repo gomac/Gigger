@@ -1,9 +1,15 @@
 import firestore from '@react-native-firebase/firestore';
 import * as geofirestore from 'geofirestore';
 import {feedback} from '../components/Feedback';
+
 import uuidv4 from 'uuid/v4';
 
 // keep this separate so it can be used for adding a new job with discrete
+// transactions
+// Decision time. Technically, the best solution is to keep nice discrete transactions
+// to make for easier maintenance. However, this would mean multiple visits to the
+// Firebase database which is charged by transactions. Better, from cost
+// to make one large transaction
 // Read https://medium.com/madhash/how-not-to-get-a-30k-bill-from-firebase-37a6cb3abaca
 
 const workTermsVals = [
@@ -21,11 +27,25 @@ const freqVals = [
   {label: 'p.a.', value: 4},
 ];
 
-export const createNewJob = async ({jobObj}) => {
-  const {name, description, videoRqdBool} = jobObj;
+export const createNewJob = ({
+  newJobName,
+  newJobDesc,
+  videoRqdBool,
+  selectedJobTypesArr,
+  requirement,
+  criteria,
+  jobStatus,
+  workTerms,
+  payFreq,
+  minPayValue,
+  maxPayValue,
+  applicationEndDate,
+  jobStartDate,
+  jobEndDate,
+  maxApplicantNum,
+}) => {
   // 1 Madatory fields
-  const jobStatus = 'started';
-  if (!name) {
+  if (!newJobName) {
     alert('You must enter a Job name first.');
     return;
   }
@@ -49,54 +69,93 @@ export const createNewJob = async ({jobObj}) => {
       createDate: Date.now(),
     }); */
 
-  await firestore()
+  // categories
+  let CatObj = {};
+  selectedJobTypesArr.map((jobType) => {
+    CatObj[jobType.id] = jobType.title;
+  });
+
+  // requirements
+  const requirements = {};
+  requirements.requirement = requirement;
+  requirements.criteria = criteria;
+
+  // status details
+
+  const terms = {};
+  terms.jobStatus = jobStatus;
+  if (typeof workTerms !== 'undefined' && workTerms !== '') {
+    terms.workTerms = workTermsVals[workTerms].label;
+  } else {
+    terms.workTerms = '';
+  }
+
+  if (payFreq) {
+    terms.payFreq = freqVals[payFreq].label;
+  }
+
+  terms.minPayValue = minPayValue;
+  terms.maxPayValue = maxPayValue;
+  terms.applicationEndDate = applicationEndDate;
+  terms.jobStartDate = jobStartDate;
+  terms.jobEndDate = jobEndDate;
+  terms.maxApplicantNum = maxApplicantNum;
+  terms.currentApplicantntNum = 0;
+  terms.selectedJobTypesArr = selectedJobTypesArr;
+
+  firestore()
     .collection('jobs')
     .doc(_id)
     .set({
       job_id: _id,
-      name: name,
-      description: description,
+      name: newJobName,
+      description: newJobDesc,
       videoRqdBool: videoRqdBool,
-      status: jobStatus,
       user_id: global.UID,
+      selectedJobTypes: CatObj,
+      requirements,
+      terms,
     })
     .then(() => {
-      feedback(name, '');
+      feedback(newJobName, '');
+      return _id;
     })
     .catch((error) => {
-      feedback(name, error);
+      feedback(newJobName, error);
     });
 
-  console.log('inside updates and id is ', _id);
-  return _id;
+  // jobloc
+  const jobObj = {};
+  jobObj._id = _id;
+  updateJobLoc(jobObj);
 };
 
-export const updateJobBasic = ({jobObj}) => {
-  const {job_id, name, description, videoRqdBool} = jobObj;
+export const updateJobBasic = (jobObj) => {
+  const {job_id, newJobName, newJobDesc, videoRqdBool} = jobObj;
   firestore()
     .collection('jobs')
     .doc(job_id)
     .update({
-      name: name,
-      description: description,
+      name: newJobName,
+      description: newJobDesc,
       videoRqdBool: videoRqdBool,
     })
     .then(() => {
-      feedback(name, '');
+      feedback(newJobName, '');
     })
     .catch((error) => {
-      feedback(name, error);
+      feedback(newJobName, error);
     });
 };
 
-export const updateJobCategories = ({jobObj}) => {
+export const updateJobCategories = (jobObj) => {
   const {job_id, selectedJobTypesArr} = jobObj;
   let obj = {};
   selectedJobTypesArr.map((jobType) => {
     obj[jobType.id] = jobType.title;
   });
   firestore()
-    .collection('jobs')
+    .collection('jobs/selectedJobTypesArr')
     .doc(job_id)
     .update({selectedJobTypesArr: obj})
     .then(() => {
@@ -107,7 +166,7 @@ export const updateJobCategories = ({jobObj}) => {
     });
 };
 
-export const updateRequirements = ({jobObj}) => {
+export const updateRequirements = (jobObj) => {
   const {job_id, requirement, criteria} = jobObj;
   const requirements = {};
   requirements.requirement = requirement;
@@ -126,9 +185,10 @@ export const updateRequirements = ({jobObj}) => {
 };
 
 //NOTE the selectedJobTypes is the jobCategories
-export const updateJobTerms = ({jobObj}) => {
+export const updateJobTerms = (jobObj) => {
   const {
     job_id,
+    jobStatus,
     workTerms,
     payFreq,
     minPayValue,
@@ -137,13 +197,15 @@ export const updateJobTerms = ({jobObj}) => {
     jobStartDate,
     jobEndDate,
     maxApplicantNum,
+    selectedJobTypesArr,
   } = jobObj;
 
   const terms = {};
-  terms.workTerms = workTerms;
+  terms.jobStatus = jobStatus;
+  terms.workTerms = workTermsVals[workTerms].label;
 
   if (payFreq) {
-    terms.payFreq = payFreq;
+    terms.payFreq = freqVals[payFreq].label;
   }
 
   terms.minPayValue = minPayValue;
@@ -153,6 +215,7 @@ export const updateJobTerms = ({jobObj}) => {
   terms.jobEndDate = jobEndDate;
   terms.maxApplicantNum = maxApplicantNum;
   terms.currentApplicantntNum = 0;
+  terms.selectedJobTypesArr = selectedJobTypesArr;
 
   firestore()
     .collection('jobs')
@@ -166,11 +229,8 @@ export const updateJobTerms = ({jobObj}) => {
     });
 };
 
-export const updateJobLoc = ({jobObj}) => {
-  const {job_id, markers, address_components} = jobObj;
-
-  const latitude = markers[0].coordinate.latitude;
-  const longitude = markers[0].coordinate.longitude;
+export const updateJobLoc = (jobObj) => {
+  const {job_id} = jobObj;
   // Create a GeoFirestore reference
   const GeoFirestore = geofirestore.initializeApp(firestore());
 
@@ -184,14 +244,12 @@ export const updateJobLoc = ({jobObj}) => {
   geocollection.add({
     job_id,
     // The coordinates field must be a GeoPoint!
-    //coordinates: new firestore.GeoPoint(40.7589, -73.9851),
-    coordinates: new firestore.GeoPoint(latitude, longitude),
+    coordinates: new firestore.GeoPoint(40.7589, -73.9851),
   });
 
   // Create a GeoQuery based on a location
   const query = geocollection.near({
-    //center: new firestore.GeoPoint(40.7589, -73.9851),
-    center: new firestore.GeoPoint(latitude, longitude),
+    center: new firestore.GeoPoint(40.7589, -73.9851),
     radius: 1000,
   });
 

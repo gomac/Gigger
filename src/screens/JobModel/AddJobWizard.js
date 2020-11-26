@@ -3,8 +3,9 @@
  * the refresh of the parent props will be handled by firestores listener
  */
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
+import {useJob} from '../../Utils/JobContext';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Wizard from 'react-native-wizard';
 import JobCategories from './JobCategories';
@@ -12,169 +13,60 @@ import JobBasic from './JobBasic';
 import Requirements from './Requirements';
 import JobTerms from './JobTerms';
 import JobLoc from './JobLoc';
-import {createNewJob} from '../../model';
 import {Button} from '../../components/Button';
 
 const AddJobWizard = (props) => {
+  const {isNewJob, finaliseNewJob} = useJob();
   const wizard = useRef();
-
-  const [newJobName, setNewJobName] = useState('');
-  const [newJobDesc, setNewJobDesc] = useState('');
-  const [jobStatus, setJobStatus] = useState('');
-  const [videoRqdBool, setVideoRqdBool] = useState(false);
-
-  const [requirement, setRequirement] = useState('');
-  const [criteria, setCriteria] = useState('');
-  const [markerLoc, setMarkerLoc] = useState('');
-  const [address_components, setAddress_components] = useState({});
-  const [payFreq, setPayFreq] = useState('');
-  const [workTerms, setWorkTerms] = useState('');
-  const [minPayValue, setMinPayValue] = useState('');
-  const [maxPayValue, setMaxPayValue] = useState(false);
-  const [applicationEndDate, setApplicationEndDate] = useState(null);
-  const [jobStartDate, setJobStartDate] = useState(null);
-  const [jobEndDate, setJobEndDate] = useState(null);
-  const [maxApplicantNum, setMaxApplicantNum] = useState(1);
-  const [selectedJobTypes, setSelectedJobTypes] = useState([]);
-  const [selectedJobTypesArr, setSelectedJobTypesArr] = useState([]);
-
   const [isLastStep, setIsLastStep] = useState(false);
   const [isFirstStep, setIsFirstStep] = useState(false);
   const [myCurrentStep, setMyCurrentStep] = useState(0);
-  const [stepIsValid, setStepIsValid] = useState(true);
+  const [stepIsValid, setStepIsValid] = useState(false);
+  const [errorMsg, setErrorMsg] = useState();
 
-  const [jobObj, setJobObj] = useState({});
-
-  const addJob = () => {
-    // decision time.
-    // 1 call apis with parameters or object. I prefer object. Easier to change
-    // 2 call multiple transactions each time the user hits Next
-    // or at the end. The latter means that it can work offline and there
-    // should be less latency between pages. The former is better technically.
-    // 3 in the database transactions, create a special transaction that updates the job table in one hit or
-    // one big specialised transcation. Prefer discrete (former) because its less maintenance.
-
-    // marshall parameters into the job object
-    setJobObj({
-      ['newJobName']: newJobName,
-      ['newJobDesc']: newJobDesc,
-      ['jobStatus']: jobStatus,
-      ['videoRqdBool']: videoRqdBool,
-      ['requirement']: requirement,
-      ['criteria']: criteria,
-      ['markerLoc']: markerLoc,
-      ['address_components']: address_components,
-      ['payFreq']: payFreq,
-      ['workTerms']: workTerms,
-      ['minPayValue']: minPayValue,
-      ['maxPayValue']: maxPayValue,
-      ['applicationEndDate']: applicationEndDate,
-      ['jobStartDate']: jobStartDate,
-      ['jobEndDate']: jobEndDate,
-      ['maxApplicantNum']: maxApplicantNum,
-      ['selectedJobTypes']: selectedJobTypes,
-      ['selectedJobTypesArr']: selectedJobTypesArr,
-    });
-    createNewJob(jobObj);
+  const clearErrors = () => {
+    setStepIsValid(true);
+    setErrorMsg(null);
   };
 
-  // error field update
-  // TODO get rid of this
-  //useEffect(() => {
-  //  createNewJob(jobObj);
-  // }, [jobObj]);
-
+  // context set new job
   const components = [
     {
-      content: (
-        <JobCategories
-          selectedJobTypes={selectedJobTypes}
-          setSelectedJobTypes={setSelectedJobTypes}
-          setSelectedJobTypesArr={setSelectedJobTypesArr}
-        />
-      ),
-      ref: 'JobCategories',
-      title: 'Job Categories',
-    },
-    {
-      content: (
-        <JobBasic
-          newJobName={newJobName}
-          updateJob={setNewJobName}
-          newJobDesc={newJobDesc}
-          updateJobDesc={setNewJobDesc}
-          videoRqdBool={videoRqdBool}
-          toggleVideoRqdBool={setVideoRqdBool}
-        />
-      ),
+      content: <JobBasic setStepIsValid={clearErrors} />,
       ref: 'JobBasic',
       title: 'Basic Details',
     },
     {
-      content: (
-        <Requirements
-          requirement={requirement}
-          setRequirement={setRequirement}
-          criteria={criteria}
-          setCriteria={setCriteria}
-          action={'add'}
-          user={global.UID}
-          entity={'jobs'}
-          actionType={'jobs'}
-        />
-      ),
-      refjjkj: 'Requirements',
+      content: <JobCategories setStepIsValid={clearErrors} />,
+      ref: 'JobCategories',
+      title: 'Job Categories',
+    },
+    {
+      content: <Requirements setStepIsValid={clearErrors} />,
+      ref: 'Requirements',
       title: 'Requirements',
     },
     {
-      content: (
-        <JobTerms
-          applicationEndDate={applicationEndDate}
-          setApplicationEndDate={setApplicationEndDate}
-          jobStartDate={jobStartDate}
-          setJobStartDate={setJobStartDate}
-          jobEndDate={jobEndDate}
-          setJobEndDate={setJobEndDate}
-          setMaxApplicantNum={setMaxApplicantNum}
-          statusPickHandler={setJobStatus}
-          workTerms={workTerms}
-          setWorkTerms={setWorkTerms}
-          minPayValue={minPayValue}
-          setMinPayValue={setMinPayValue}
-          maxPayValue={maxPayValue}
-          setMaxPayValue={setMaxPayValue}
-          payFreq={payFreq}
-          setPayFreq={setPayFreq}
-          setStepIsValid={setStepIsValid}
-        />
-      ),
+      content: <JobTerms setStepIsValid={clearErrors} />,
       ref: 'JobTerms',
       title: 'Status and Rates',
     },
     {
-      content: <JobLoc setMarkerLoc={setMarkerLoc} />,
+      content: <JobLoc setStepIsValid={clearErrors} />,
       ref: 'JobLoc',
       title: 'Location',
     },
-    {
-      content: (
-        <Button
-          text={'Add Job'}
-          accessibilityLabel={'Add Job'}
-          onPress={() => {
-            addJob();
-          }}
-        />
-      ),
-    },
   ];
 
-  const setMarkerLocComponents = (loc, components) => {
-    //console.log("setMarkerLoc ", address_components)
+  const goToNext = () => {
+    wizard.current.next();
+    setStepIsValid(false);
+    setErrorMsg(null);
+  };
 
-    setMarkerLoc(loc);
-    setAddress_components(components);
-    setStepIsValid(true);
+  const finalize = () => {
+    finaliseNewJob();
+    props.navigation.navigate('Home');
   };
 
   return (
@@ -186,7 +78,6 @@ const AddJobWizard = (props) => {
               <Button
                 onPress={() => {
                   //assume that when going back the validations are good
-                  setStepIsValid(true);
                   wizard.current.prev();
                 }}
                 text={'Back'}
@@ -195,24 +86,32 @@ const AddJobWizard = (props) => {
 
             <Text style={{fontSize: 18}}> Step {myCurrentStep + 1} of 6 </Text>
 
-            {!isLastStep && (
+            {!isLastStep ? (
               <Button
                 onPress={() => {
-                  // you can only go forward if stepIsValid
-                  // if (stepIsValid || currentStep == 2 || currentStep == 3) {
-                  wizard.current.next();
-                  setStepIsValid(true);
-                  /*                   } else {
-                    alert('You must fill all mandatory fields');
-                  } */
+                  // you can only go forward if setStepIsValid
+                  stepIsValid
+                    ? goToNext()
+                    : setErrorMsg('Save and correct errors first');
                 }}
                 text={'Next'}
               />
+            ) : (
+              <Button
+                onPress={() => {
+                  // you can only go forward if setStepIsValid
+                  stepIsValid
+                    ? finalize()
+                    : setErrorMsg('Save and correct errors first');
+                }}
+                text={'Finalize'}
+              />
             )}
             {/*                   <Text>
-                    Screen: {components[currentStep].ref}
-                  </Text> */}
+                  Screen: {components[currentStep].ref}
+                </Text> */}
           </View>
+          {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
         </View>
         <Wizard
           useNativeDriver={true}
@@ -250,19 +149,14 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
   },
+  error: {
+    color: 'red',
+    fontWeight: '600',
+    marginBottom: 7,
+  },
   likeRow: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-  },
-  touchIconLeft: {
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-    width: 50,
-  },
-  touchIconRight: {
-    alignItems: 'flex-end',
-    justifyContent: 'flex-end',
-    width: 50,
   },
   title: {
     fontFamily: 'Cochin',

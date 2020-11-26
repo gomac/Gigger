@@ -1,5 +1,6 @@
 'use strict';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
+import {useJob} from '../../Utils/JobContext';
 import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import NumericInput from 'react-native-numeric-input';
 import CustomNumeric from '@wwdrew/react-native-numeric-textinput';
@@ -7,7 +8,6 @@ import DatePicker from 'react-native-datepicker';
 import RNPickerSelect from 'react-native-picker-select';
 import {useForm, Controller} from 'react-hook-form';
 import {Button} from '../../components/Button';
-import moment from 'moment';
 import {updateJobTerms} from '../../model';
 const initialJobData = {
   status: '',
@@ -64,62 +64,23 @@ function getEndDate(days) {
   return outDate;
 }
 
+///////
 const JobTerms = (props, {} = {...initialJobData}) => {
-  const {jobObj} = props.route.params;
-  props = {...props, ...jobObj};
+  const {isNewJob, jobObj, updJobObj} = useJob();
 
-  const [job_id] = useState(jobObj.job_id);
-  const {errors, control, handleSubmit, getValues} = useForm({
+  const {errors, control, handleSubmit} = useForm({
     mode: 'onBlur',
   });
-
-  const [error, setError] = useState(null);
-  const [redisplay, setResdisplay] = useState(false);
-  const [isDirty, setIsDirty] = useState({});
-
-  // error field update
-  useEffect(() => {
-    setResdisplay(true);
-  }, [error]);
-
-  console.log('errors ', errors);
 
   const refMinPay = useRef(null);
   const refMaxPay = useRef(null);
   const refStartDate = useRef(null);
   const refEndDate = useRef(null);
   const refApplicationEndDate = useRef(null);
-  ////
-  const [payFreq, setPayFreq] = useState(
-    jobObj.terms?.payFreq ? jobObj.terms.payFreq : '',
-  );
 
-  const [workTerms, setWorkTerms] = useState(
-    jobObj.terms?.workTerms ? jobObj.terms.workTerms : '',
-  );
-  const [minPayValue, setMinPayValue] = useState(
-    jobObj.terms?.minPayValue ? jobObj.terms.minPayValue : '',
-  );
-  const [maxPayValue, setMaxPayValue] = useState(
-    jobObj.terms?.maxPayValue ? jobObj.terms?.maxPayValue : '',
-  );
-  const [applicationEndDate, setApplicationEndDate] = useState(null);
-  const [jobStartDate, setJobStartDate] = useState(null);
-  const [jobEndDate, setJobEndDate] = useState(null);
-  const [maxApplicantNum, setMaxApplicantNum] = useState(
-    jobObj.maxApplicantNum || 1,
-  );
-
-  const onSubmit = (data) => {
-    console.log('data ', data);
-    /*     updateJobTerms({
-      job_id,
-      refMinPay,
-      refMaxPay,
-      refStartDate,
-      refEndDate,
-      refApplicationEndDate,
-    }); */
+  const onSubmit = () => {
+    updateJobTerms({jobObj});
+    isNewJob && props.setStepIsValid(true);
   };
 
   const placeholder = {
@@ -148,16 +109,16 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                       value === '' ? 'You must select the Contract Type' : '',
                   },
                 }} */
-                defaultValue={workTerms}
+                defaultValue={jobObj.workTerms}
                 render={({value, onChange, onBlur}) => (
                   <RNPickerSelect
                     placeholder={placeholder}
                     items={workTermsList}
                     onValueChange={(val) => {
                       onChange(val);
-                      setWorkTerms(val);
+                      updJobObj('workTerms', val);
                     }}
-                    value={workTerms}
+                    value={jobObj.workTerms}
                     useNativeAndroidPickerStyle={false}
                     Icon={() => {
                       return <View style={styles.RNPickerSelect} />;
@@ -195,8 +156,8 @@ const JobTerms = (props, {} = {...initialJobData}) => {
               rightButtonBackgroundColor="#8fb1aa"
               iconStyle={{color: 'white'}}
               leftButtonBackgroundColor="#8fb1aa"
-              value={maxApplicantNum}
-              onChange={(value) => setMaxApplicantNum({value})}
+              value={jobObj.maxApplicantNum}
+              onChange={(value) => updJobObj('maxApplicationNum', value)}
             />
           </View>
           <View style={{flexDirection: 'column'}}>
@@ -207,12 +168,12 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                   name="applicationEndDate"
                   control={control}
                   rules={{required: "'Apply until' is required"}}
-                  defaultValue={applicationEndDate}
+                  defaultValue={jobObj.applicationEndDate}
                   render={({value, onChange, onBlur}) => (
                     <DatePicker
                       ref={refApplicationEndDate}
                       style={{width: '35%'}}
-                      date={applicationEndDate}
+                      date={jobObj.applicationEndDate}
                       value={value}
                       placeholder="select date"
                       mode="date"
@@ -238,7 +199,7 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                       onDateChange={
                         (date) => {
                           onChange(date);
-                          setApplicationEndDate(date);
+                          updJobObj('applicationEndDate', date);
                         }
                         //handleOnChange('applicationEndDate', date) &&
                       }
@@ -260,12 +221,12 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                   name="jobStartDate"
                   control={control}
                   rules={{required: "'Start Date' is required"}}
-                  defaultValue={jobStartDate}
+                  defaultValue={jobObj.jobStartDate}
                   render={({value, onChange, onBlur}) => (
                     <DatePicker
                       ref={refStartDate}
                       style={{width: '35%'}}
-                      date={jobStartDate}
+                      date={jobObj.jobStartDate}
                       value={value}
                       placeholder="select date"
                       mode="date"
@@ -290,7 +251,7 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                       }}
                       onDateChange={(date) => {
                         onChange(date);
-                        setJobStartDate(date);
+                        updJobObj('jobStartDate', date);
                       }}
                       onBlur={onBlur}
                     />
@@ -313,18 +274,18 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                     validate: {
                       endDateAfterStartDate: (value) => {
                         return (
-                          jobStartDate > value &&
+                          jobObj.jobStartDate < value ||
                           'End Date cannot be before Start Date'
                         );
                       },
                     },
                   }}
-                  defaultValue={jobEndDate}
+                  defaultValue={jobObj.jobEndDate}
                   render={({value, onChange, onBlur}) => (
                     <DatePicker
                       ref={refEndDate}
                       style={{width: '35%'}}
-                      date={jobEndDate}
+                      date={jobObj.jobEndDate}
                       value={value}
                       placeholder="select date"
                       mode="date"
@@ -349,7 +310,7 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                       }}
                       onDateChange={(date) => {
                         onChange(date);
-                        setJobEndDate(date);
+                        updJobObj('jobEndDate', date);
                       }}
                       onBlur={onBlur}
                     />
@@ -376,9 +337,9 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                 placeholder={placeholder}
                 items={freqVals}
                 onValueChange={(value) => {
-                  setPayFreq(value);
+                  updJobObj('payFreq', value);
                 }}
-                value={payFreq}
+                value={jobObj.payFreq}
                 useNativeAndroidPickerStyle={false}
                 Icon={() => {
                   return <View style={styles.RNPickerSelect} />;
@@ -406,12 +367,13 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                   validate: {
                     requiredIfPayfreq: (value) => {
                       return (
-                        payFreq !== '' && !value && 'Required for Pay Range'
+                        (jobObj.payFreq !== '' && value) ||
+                        'Required for Pay Range'
                       );
                     },
                   },
                 }}
-                defaultValue={minPayValue}
+                defaultValue={jobObj.minPayValue}
                 render={({value, onChange, onBlur}) => (
                   <CustomNumeric
                     ref={refMinPay}
@@ -421,10 +383,10 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                     borderColor="grey"
                     color="#5d5d5d"
                     borderWidth={1}
-                    value={minPayValue}
+                    value={jobObj.minPayValue}
                     onUpdate={(minValue) => {
                       onChange(minValue);
-                      setMinPayValue(minValue);
+                      updJobObj('minPayValue', minValue);
                     }}
                     onBlur={onBlur}
                   />
@@ -446,18 +408,18 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                       minMoreThanMax: (value) => {
                         console.log(
                           'minPayValue > value ',
-                          minPayValue,
+                          jobObj.minPayValue,
                           ' ',
                           value,
                         );
                         return (
-                          minPayValue > value &&
+                          jobObj.minPayValue <= value ||
                           'Maximum cannot be less than Minimum'
                         );
                       },
                     },
                   }}
-                  defaultValue={maxPayValue}
+                  defaultValue={jobObj.maxPayValue}
                   render={({value, onChange, onBlur}) => (
                     <CustomNumeric
                       ref={refMaxPay}
@@ -467,10 +429,10 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                       borderColor="grey"
                       color="#5d5d5d"
                       borderWidth={1}
-                      value={maxPayValue}
+                      value={jobObj.maxPayValue}
                       onUpdate={(maxValue) => {
                         onChange(maxValue);
-                        setMaxPayValue(maxValue);
+                        updJobObj('maxPayValue', maxValue);
                       }}
                       onBlur={onBlur}
                     />

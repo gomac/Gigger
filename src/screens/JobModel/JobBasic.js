@@ -1,79 +1,67 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
+import {useJob} from '../../Utils/JobContext';
 import {TextField} from '../../components/FormFields';
 import {MultLineTextField} from '../../components/FormFields';
 import {useForm, Controller} from 'react-hook-form';
 import {Button} from '../../components/Button';
-import {updateJobBasic} from '../../model';
+import {createNewJob, updateJobBasic} from '../../model';
 
 const JobBasic = (props) => {
-  const {jobObj} = props.route.params;
-  props = {...props, ...jobObj};
-
-  const [job_id] = useState(jobObj.job_id);
-  const [newJobName, setNewJobName] = useState(jobObj.name);
-  const [newJobDesc, setNewJobDesc] = useState(jobObj.description);
-  const [videoRqdBool, setVideoRqdBool] = useState(jobObj.videoRqdBool);
-
-  const {errors, control, handleSubmit, trigger} = useForm({
+  const {isNewJob, jobObj, updJobObj, setNewJob_id} = useJob();
+  const {errors, control, handleSubmit} = useForm({
     mode: 'onBlur',
   });
 
-  const onSubmit = (data) => {
-    console.log('data ', data);
-    updateJobBasic({job_id, newJobName, newJobDesc, videoRqdBool});
+  const onSubmit = async (data) => {
+    if (isNewJob) {
+      const returned_id = await createNewJob({jobObj});
+      if (returned_id) {
+        setNewJob_id(returned_id);
+        isNewJob && props.setStepIsValid(true);
+      }
+    } else {
+      updateJobBasic({jobObj});
+      // TODO need to add an await here
+      isNewJob && props.setStepIsValid(true);
+    }
   };
 
   return (
     <View>
       <Controller
-        name="newJobName"
+        name="name"
         control={control}
         rules={{required: 'Required field'}}
-        defaultValue={newJobName}
+        defaultValue={jobObj.name}
         render={({value, onChange, onBlur}) => (
           <TextField
-            value={newJobName}
+            value={jobObj.name}
             placeholder="Enter new job name here"
             name={'newJobName'}
-            style={{
-              alignSelf: 'center',
-              textAlignVertical: 'top',
-              borderColor: '#1ca0ff',
-              borderWidth: 1,
-              color: '#5d5d5d',
-              paddingLeft: 10,
-              paddingRight: 10,
-              marginVertical: 10,
-              width: '90%',
-            }}
+            style={styles.singleField}
             onBlur={onBlur}
             onChangeText={(val) => {
               onChange(val);
-              setNewJobName(val);
+              updJobObj('name', val);
             }}
-            error={errors.newJobName && errors.newJobName.message}
+            error={errors.name && errors.name.message}
           />
         )}
       />
-
       <MultLineTextField
-        value={newJobDesc}
+        value={jobObj.description}
         placeholder="Enter the job description"
-        name={'newJobDesc'}
-        onChange={setNewJobDesc}
-        editable={true}
-        multiline={true}
+        onChangeText={(val) => updJobObj('description', val)}
         maxLength={2000}
         numberOfLines={3}
-        autoGrow={true}
       />
       <View style={[{textAlignVertical: 'top'}, styles.multilineBox]}>
-        <Text>Video {videoRqdBool ? 'IS' : 'IS NOT'} required</Text>
+        <Text>Video {jobObj.videoRqdBool ? 'IS' : 'IS NOT'} required</Text>
         <Switch
           style={{marginTop: 30}}
-          onValueChange={setVideoRqdBool}
-          value={videoRqdBool}
+          onValueChange={(val) => updJobObj('videoRqdBool', val)}
+          value={jobObj.videoRqdBool}
         />
         <Text>
           If this is on, a short 15 second video will be required from
@@ -93,6 +81,17 @@ const styles = StyleSheet.create({
   containerStyle: {
     flex: 1,
     flexDirection: 'column',
+  },
+  singleField: {
+    alignSelf: 'center',
+    textAlignVertical: 'top',
+    borderColor: '#1ca0ff',
+    borderWidth: 1,
+    color: '#5d5d5d',
+    paddingLeft: 10,
+    paddingRight: 10,
+    marginVertical: 10,
+    width: '90%',
   },
   multilineBox: {
     alignSelf: 'center',

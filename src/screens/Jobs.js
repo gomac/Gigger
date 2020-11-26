@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-//import {useAuthState} from 'react-firebase-hooks/auth';
+import React, {useState} from 'react';
+import {useJob} from '../Utils/JobContext';
 import moment from 'moment';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MapInput from '../components/MapInput';
@@ -23,6 +23,7 @@ const B = (props) => <Text style={{fontWeight: 'bold'}}>{props.children}</Text>;
 const RED = (props) => <Text style={{color: 'red'}}>{props.children}</Text>;
 
 const Jobs = (props) => {
+  const {setNewJob, loadJobObj} = useJob();
   const [criteria, setCriteria] = useState([]);
   const [markerLoc, setMarkerLoc] = useState([]);
 
@@ -56,10 +57,36 @@ const Jobs = (props) => {
     );
   }
 
+  var flattenObject = function (ob, arr = []) {
+    var toReturn = {};
+
+    for (var i in ob) {
+      if (!ob.hasOwnProperty(i)) continue;
+
+      if (typeof ob[i] == 'object') {
+        if (arr.includes(i)) {
+          toReturn[i] = ob[i];
+          continue;
+        }
+
+        var flatObject = flattenObject(ob[i]);
+        for (var x in flatObject) {
+          if (!flatObject.hasOwnProperty(x)) continue;
+
+          toReturn[x] = flatObject[x];
+        }
+      } else {
+        toReturn[i] = ob[i];
+      }
+    }
+    return toReturn;
+  };
+
   const goToJobController = (item) => {
-    props.navigation.navigate('JobController', {
-      jobObj: item,
-    });
+    var selArr = ['selectedJobTypesArr'];
+    console.log(flattenObject(item, selArr));
+    loadJobObj(flattenObject(item));
+    props.navigation.navigate('JobController');
   };
 
   const renderHeader = () => {
@@ -152,6 +179,11 @@ const Jobs = (props) => {
     });
   };
 
+  const goToWizard = () => {
+    setNewJob();
+    props.navigation.navigate('AddJobWizard');
+  };
+
   return (
     <View {...testProperties('Home-screen')} style={styles.searchContainer}>
       <SafeAreaView {...testProperties('List')}>
@@ -202,7 +234,7 @@ const Jobs = (props) => {
             name="plus-circle"
             size={55}
             color="rgba(231,76,60,1)"
-            onPress={() => props.navigation.navigate('AddJobWizard')}
+            onPress={goToWizard}
           />
         ) : null}
       </SafeAreaView>

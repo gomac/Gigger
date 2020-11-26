@@ -1,4 +1,5 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
+import {useJob} from '../../Utils/JobContext';
 import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {MultLineTextField} from '../../components/FormFields';
@@ -9,39 +10,14 @@ import {updateRequirements} from '../../model';
 const {width} = Dimensions.get('window');
 
 const Requirements = (props) => {
-  const {jobObj} = props.route.params;
-  props = {...props, ...jobObj};
-
-  const [job_id] = useState(jobObj.job_id);
-  const [requirement, setRequirement] = useState(
-    typeof jobObj.requirements?.requirement !== 'undefined'
-      ? jobObj.requirements.requirement
-      : '',
-  );
-  const [criteria, setCriteria] = useState(
-    typeof jobObj.requirements?.criteria !== 'undefined'
-      ? jobObj.requirements.criteria
-      : '',
-  );
-
+  const {isNewJob, jobObj, updJobObj} = useJob();
   const {errors, control, handleSubmit, trigger} = useForm({
     mode: 'onBlur',
   });
-  /*
-  const triggerValidation = () => {
-    trigger();
-  }; */
-
-  /*   useEffect(() => {
-    if (props.startValidation) {
-      triggerValidation();
-      if (props.onValidationReset) props.onValidationReset();
-    }
-  }, [props.startValidation, props.onValidationReset]); */
 
   const onSubmit = (data) => {
-    console.log('data ', data);
-    updateRequirements({job_id, requirement, criteria});
+    updateRequirements({jobObj});
+    isNewJob && props.setStepIsValid(true);
   };
 
   return (
@@ -55,17 +31,17 @@ const Requirements = (props) => {
             name="requirement"
             control={control}
             rules={{required: 'Required field'}}
-            defaultValue={requirement}
+            defaultValue={jobObj.requirement}
             render={({value, onChange, onBlur}) => (
               <MultLineTextField
                 {...props}
                 placeholderTextColor="#828282"
                 placeholder="Enter requirements here"
-                value={requirement}
+                value={jobObj.requirement}
                 onBlur={onBlur}
                 onChangeText={(val) => {
                   onChange(val);
-                  setRequirement(val);
+                  updJobObj('requirement', val);
                 }}
                 error={errors.requirement && errors.requirement.message}
               />
@@ -75,9 +51,9 @@ const Requirements = (props) => {
             {...props}
             placeholderTextColor="#828282"
             placeholder="Enter criteria here"
-            value={criteria}
+            value={jobObj.criteria}
             onChangeText={(val) => {
-              setCriteria(val);
+              updJobObj('criteria', val);
             }}
           />
         </ScrollView>

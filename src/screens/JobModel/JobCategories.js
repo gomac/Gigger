@@ -1,25 +1,24 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Dimensions, ScrollView, StyleSheet, Text} from 'react-native';
+import React, {useRef, useState} from 'react';
+import {useJob} from '../../Utils/JobContext';
+import {Dimensions, ScrollView, StyleSheet, Text, View} from 'react-native';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 import {useCollectionOnce} from 'react-firebase-hooks/firestore';
 import {useForm, Controller} from 'react-hook-form';
 import firestore from '@react-native-firebase/firestore';
 import {Button} from '../../components/Button';
+import {updateJobCategories} from '../../model';
 
 const JobCategories = (props) => {
-  const {jobObj} = props.route.params;
-
+  const {isNewJob, jobObj, updJobObj} = useJob();
   const MSListRef = useRef();
-  const [job_id] = useState(jobObj.job_id);
   const [selectedJobTypes, setSelectedJobTypes] = useState([]);
-  const [selectedJobTypesArr, setSelectedJobTypesArr] = useState([]);
-
-  const {errors, control, handleSubmit, trigger} = useForm({
+  const {errors, control, handleSubmit} = useForm({
     mode: 'onBlur',
   });
 
   const onSubmit = (data) => {
-    console.log('data ', data);
+    updateJobCategories({jobObj});
+    isNewJob && props.setStepIsValid(true);
   };
 
   const [refData, loading, error] = useCollectionOnce(
@@ -84,19 +83,11 @@ const JobCategories = (props) => {
   return (
     <ScrollView keyboardShouldPersistTaps={'handled'} style={styles.scrollView}>
       {typeof outArr !== 'undefined' && (
-        <>
+        <View>
           <Controller
             name="JobCats"
             control={control}
-            //rules={{required: 'Required field'}}
-            rules={{
-              validate: {
-                arrayNotEmpty: (value) =>
-                  value.length > 0
-                    ? ''
-                    : 'You must select at least one category',
-              },
-            }}
+            rules={{required: 'Required field'}}
             defaultValue={selectedJobTypes}
             render={({value, onChange, onBlur}) => (
               <SectionedMultiSelect
@@ -139,7 +130,9 @@ const JobCategories = (props) => {
                   onChange(val);
                   setSelectedJobTypes(val);
                 }}
-                onSelectedItemObjectsChange={setSelectedJobTypesArr}
+                onSelectedItemObjectsChange={(val) =>
+                  updJobObj('selectedJobTypesArr', val)
+                }
                 //onSelectedItemObjectsChange={onSelectedItemObjectsChange}
                 selectedItems={value}
                 colors={{primary: '#5c3a9e', success: '#5c3a9e'}}
@@ -183,7 +176,7 @@ const JobCategories = (props) => {
           {errors.JobCats && (
             <Text style={styles.error}>{errors.JobCats.message}</Text>
           )}
-        </>
+        </View>
       )}
       <Button
         text="Save Details"

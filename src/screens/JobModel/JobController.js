@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {
   Image,
   ImageBackground,
@@ -9,17 +9,11 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import JobCategories from './JobCategories';
-import JobBasic from './JobBasic';
-import Requirements from './Requirements';
-import JobTerms from './JobTerms';
-import JobLoc from './JobLoc';
-import Icon from 'react-native-vector-icons/FontAwesome5';
 
 const {width} = Dimensions.get('window');
 
 const JobController = (props) => {
-  const {jobObj} = props.route.params;
+  //const {jobObj} = props.route.params;
 
   const screens = [
     'JobBasic',
@@ -30,7 +24,7 @@ const JobController = (props) => {
   ];
 
   const onLearnMore = (screen) => {
-    props.navigation.navigate(screen, {jobObj: jobObj});
+    props.navigation.navigate(screen);
   };
 
   const Item = ({size, margin, screen}, index) => {

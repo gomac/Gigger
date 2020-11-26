@@ -44,7 +44,7 @@
     "react-firebase-hooks": "^2.2.0",
     "react-hook-form": "^6.11.3",
     "react-moment": "*",
-    "react-native": "0.63.",
+    "react-native": "0.63.0",
     "react-native-app-intro-slider": "^4.0.4",
     "react-native-aws3": "0.0.9",
     "react-native-camera": "^3.38.0",
