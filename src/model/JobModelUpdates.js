@@ -166,11 +166,11 @@ export const updateJobTerms = ({jobObj}) => {
     });
 };
 
-export const updateJobLoc = ({jobObj}) => {
-  const {job_id, markers, address_components} = jobObj;
+export const updateJobLoc = (markers, {jobObj}) => {
+  const {job_id, address_components} = jobObj;
 
-  const latitude = markers[0].coordinate.latitude;
-  const longitude = markers[0].coordinate.longitude;
+  const latitude = markers[0]?.coordinate.latitude;
+  const longitude = markers[0]?.coordinate.longitude;
   // Create a GeoFirestore reference
   const GeoFirestore = geofirestore.initializeApp(firestore());
 
@@ -181,12 +181,18 @@ export const updateJobLoc = ({jobObj}) => {
     alert('There was an error adding location');
   }
   // Add a GeoDocument to a GeoCollection
-  geocollection.add({
-    job_id,
-    // The coordinates field must be a GeoPoint!
-    //coordinates: new firestore.GeoPoint(40.7589, -73.9851),
-    coordinates: new firestore.GeoPoint(latitude, longitude),
-  });
+  geocollection
+    .add({
+      job_id,
+      // The coordinates field must be a GeoPoint!
+      //coordinates: new firestore.GeoPoint(40.7589, -73.9851),
+      coordinates: new firestore.GeoPoint(latitude, longitude),
+    })
+    .then(() => {
+      feedback('', '');
+    });
+
+  // todo add human readable address
 
   // Create a GeoQuery based on a location
   const query = geocollection.near({

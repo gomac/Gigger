@@ -11,4 +11,11 @@ export {
   GetJobsByUid,
   GetJobsByJob_Id,
   GetJobsByCriteria,
+  GetJobsInLocation,
+  GetJobIdsInLocation,
+  GetRefData,
+  GetJobsByCriteriaLocation,
+  GetJobsByUidOnce,
 } from './JobModelQueries';
+
+export {updateApplication} from './ApplicationModelUpdates';

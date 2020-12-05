@@ -6,26 +6,26 @@ const AuthContext = createContext(null);
 
 // user loaded in a context for easy access
 const AuthProvider = ({children}) => {
-  const [newUser, setNewUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(null);
-  const [authError, setAuthError] = useState(null);
-
   // set up the listener
   const [user, loading, error] = useAuthState(auth());
+
+  const [currentUser, setCurrentUser] = useState(user?._user);
+  const [authLoading] = useState(loading);
+  const [authError] = useState(error);
 
   // update the user when the listener detects a change of user
   useEffect(() => {
     if (user !== null && user._user !== 'undefined') {
-      setNewUser(user._user);
+      setCurrentUser(user._user);
     } else {
-      setNewUser(null);
+      setCurrentUser(null);
     }
   }, [user]);
 
   return (
     <AuthContext.Provider
       value={{
-        newUser,
+        currentUser,
         authLoading,
         authError,
       }}>

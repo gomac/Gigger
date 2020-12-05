@@ -78,7 +78,7 @@ export const uploadRecording = (fn, callback) => {
       .then((response) => {
         //console.log(response, "response from rns3 audio");
         if (response.status !== 201) {
-          alert('Something went wrong, and the audio was not uploaded.');
+          alert('Something went wrong, and the video was not uploaded.');
           console.error(response.body);
           reject(response.body);
           return;
@@ -89,52 +89,6 @@ export const uploadRecording = (fn, callback) => {
         //console.log((err, "error audio upload");
       });
   });
-};
-
-refDataToMultiSLFormat = (obj) => {
-  // needs to look like this
-  /*
-		const outArr = [
-  	// this is the parent or 'item'
-  	{
-			name: 'Building and related trades workers, excluding electricians',
-			id: 0,
-			// these are the children or 'sub items'
-				children: [
-					{
-						name: 'Building finishers and related trades workers:',
-						id: 10,
-					},
-					{
-						name: 'Building frame and related trades workers',
-						id: 17,
-					}
-				] */
-  let outArr = [];
-  const entries = Object.entries(obj);
-  entries.map((heading, index) => {
-    //console.log("heading ", heading)
-    let outItem = {};
-    //substring sort key which is first two digits
-    outItem.title = heading[0].substring(2);
-    outItem.id = 100 * (index + 1);
-    //console.log("outItem.id ", outItem.id)
-    // now map children
-    let childArr = [];
-    const children = Object.entries(heading[1]);
-    children.map((child, index2) => {
-      let outChild = {};
-      //console.log("child ", child)
-      outChild.title = child[0];
-      outChild.id = outItem.id + (index2 + 1);
-      //console.log("outChild.id ", outChild.id)
-      childArr.push(outChild);
-    });
-    outItem.children = childArr;
-    outArr.push(outItem);
-  });
-  //console.log("outArr ", outArr)
-  return outArr;
 };
 
 export const getRefData = () => {

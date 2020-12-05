@@ -14,7 +14,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {w, h, totalSize} from '../../../Utils/Dimensions';
 import InputField from '../../../components/InputField';
 import Continue from './Continue';
-import Firebase from '../../api/Firebase';
+import {createFirebaseAccount} from '../../api/Firebase';
 import {CheckBox} from 'react-native-elements';
 
 /* const companyLogo =
@@ -88,33 +88,31 @@ export default class Register extends Component {
 
   createFireBasePlusUserAccount = (name, company, email, password) => {
     this.setState({isCreatingAccount: true});
-    Firebase.createFirebaseAccount(name, company, email, password).then(
-      (result) => {
-        if (typeof result === 'string') {
-          if (result.substring(0, 5) === 'Error') {
-            if (result.toString().substring(7, 15) === 'Password') {
-              this.setState({
-                isCreatingAccount: false,
-                isPasswordError: true,
-                errorMsg: result,
-              });
-            } else if (result.includes('email')) {
-              this.setState({
-                isCreatingAccount: false,
-                isEmailError: true,
-                errorMsg: result,
-              });
-            } else {
-              console.log('unknown error in registration');
-            }
+    createFirebaseAccount(name, company, email, password).then((result) => {
+      if (typeof result === 'string') {
+        if (result.substring(0, 5) === 'Error') {
+          if (result.toString().substring(7, 15) === 'Password') {
+            this.setState({
+              isCreatingAccount: false,
+              isPasswordError: true,
+              errorMsg: result,
+            });
+          } else if (result.includes('email')) {
+            this.setState({
+              isCreatingAccount: false,
+              isEmailError: true,
+              errorMsg: result,
+            });
           } else {
+            console.log('unknown error in registration');
           }
         } else {
-          this.props.change('login')();
-          this.setState({isCreatingAccount: false});
         }
-      },
-    );
+      } else {
+        this.props.change('login')();
+        this.setState({isCreatingAccount: false});
+      }
+    });
   };
 
   changeInputFocus = (name) => () => {

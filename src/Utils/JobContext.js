@@ -33,7 +33,7 @@ const JobProvider = ({children}) => {
   const jobValue = useMemo(() => {
     return {
       updJobObj: (name, val) => {
-        // marshall parameters into the job object
+        // update the job object
         setJobObj({...jobObj, [name]: val});
       },
       loadJobObj: (obj) => {

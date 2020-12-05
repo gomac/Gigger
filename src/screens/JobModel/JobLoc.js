@@ -26,7 +26,7 @@ const JobLoc = (props) => {
 
   const onSubmit = (data) => {
     //updateJobLoc({job_id, markers, address_components});
-    updJobObj({jobObj});
+    updateJobLoc(markers, {jobObj});
     isNewJob && props.setStepIsValid(true);
   };
 
@@ -56,7 +56,7 @@ const JobLoc = (props) => {
 
   useEffect(() => {
     // console.log("address_components ", address_components)
-    if (markers.length > 0 && jobObj.address_components.length > 0) {
+    if (markers.length > 0 && jobObj.address_components?.length > 0) {
       setMarkerLoc(markers[0], jobObj.address_components);
     }
   }, [markers, jobObj.address_components]);

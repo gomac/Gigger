@@ -1,5 +1,5 @@
 'use strict';
-import React, {useState, useMemo} from 'react';
+import React, {useState, useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -12,6 +12,8 @@ import Splash from './screens/Splash';
 import FirebaseLogin from './FirebaseLogin';
 import LogOut from './FirebaseLogin/screens/LogOut';
 import {NetworkContext} from './Utils/NetworkProvider';
+import Video from './screens/Video';
+import Enquiry from './screens/Enquiry';
 import {AuthProvider, useAuth} from './Utils/AuthContext';
 import {JobProvider} from './Utils/JobContext';
 import {testProperties} from './Utils/TestProperties';
@@ -21,9 +23,11 @@ import JobCategories from './screens/JobModel/JobCategories';
 import JobBasic from './screens/JobModel/JobBasic';
 import Requirements from './screens/JobModel/Requirements';
 import JobTerms from './screens/JobModel/JobTerms';
+import Search from './screens/Search';
+import IntroSwiper from './components/IntroSwiper';
 import JobLoc from './screens/JobModel/JobLoc';
+import store from 'react-native-simple-store';
 
-////
 const AuthStack = createStackNavigator();
 const JobsStack = createStackNavigator();
 const Tabs = createBottomTabNavigator();
@@ -187,6 +191,63 @@ const JobsStackScreen = () => (
         title: 'Add New Job',
       }}
     />
+    <JobsStack.Screen
+      name="Search"
+      component={Search}
+      options={{
+        tabBarLabel: 'Search Results',
+        headerTitleStyle: {
+          width: '90%',
+          textAlign: 'right',
+        },
+        headerStyle: {
+          backgroundColor: '#5692CE',
+        },
+        headerTintColor: '#fff',
+        //tabBarVisible: false,
+        tabBarIcon: ({tintColor}) => (
+          <Icon name="list" size={35} color={tintColor} />
+        ),
+      }}
+    />
+    <JobsStack.Screen
+      name="Enquiry"
+      component={Enquiry}
+      options={{
+        tabBarLabel: 'Enquiries',
+        headerTitleStyle: {
+          width: '90%',
+          textAlign: 'right',
+        },
+        headerStyle: {
+          backgroundColor: '#5692CE',
+        },
+        headerTintColor: '#fff',
+        //tabBarVisible: false,
+        tabBarIcon: ({tintColor}) => (
+          <Icon name="list" size={35} color={tintColor} />
+        ),
+      }}
+    />
+    <Tabs.Screen
+      name="Video"
+      component={Video}
+      options={{
+        tabBarLabel: 'Video',
+        headerTitleStyle: {
+          width: '90%',
+          textAlign: 'right',
+        },
+        headerStyle: {
+          backgroundColor: '#5692CE',
+        },
+        headerTintColor: '#fff',
+        //tabBarVisible: false,
+        tabBarIcon: ({tintColor}) => (
+          <Icon name="videocam" size={35} color={'blue'} />
+        ),
+      }}
+    />
   </JobsStack.Navigator>
 );
 
@@ -210,6 +271,25 @@ const TabsScreen = () => (
         //tabBarVisible: false,
         tabBarIcon: ({tintColor}) => (
           <Icon name="home" size={35} color={tintColor} />
+        ),
+      }}
+    />
+    <Tabs.Screen
+      name="Video"
+      component={Video}
+      options={{
+        tabBarLabel: 'Video',
+        headerTitleStyle: {
+          width: '90%',
+          textAlign: 'right',
+        },
+        headerStyle: {
+          backgroundColor: '#5692CE',
+        },
+        headerTintColor: '#fff',
+        //tabBarVisible: false,
+        tabBarIcon: ({tintColor}) => (
+          <Icon name="videocam" size={35} color={'blue'} />
         ),
       }}
     />
@@ -258,23 +338,23 @@ const DrawerScreen = () => (
 );
 
 const RootStackScreen = () => {
-  // newuser is provided from the listener in the authProvider
-  const {newUser, authLoading, authError} = useAuth();
-
+  // currentUser is provided from the listener in the authProvider
+  const {currentUser, loading, error} = useAuth();
+  console.log('error ', error);
   // if no user go to login, don't show error
-  if (authLoading) {
+  if (loading) {
     return <Splash />;
   }
-  if (newUser !== null && newUser !== 'undefined') {
+  if (currentUser !== null && typeof currentUser !== 'undefined') {
     //setup globals
-    global.UID = newUser.uid;
-    global.displayName = newUser.displayName;
-    global.email = newUser.email;
+    global.UID = currentUser.uid;
+    global.displayName = currentUser.displayName;
+    global.email = currentUser.email;
   }
 
   return (
     <RootStack.Navigator headerMode="none">
-      {newUser !== null && newUser !== 'undefined' ? (
+      {currentUser !== null && currentUser !== 'undefined' ? (
         <RootStack.Screen
           name="Drawer"
           component={DrawerScreen}
@@ -301,15 +381,37 @@ const RootStackScreen = () => {
 };
 
 export default () => {
-  return (
-    <AuthProvider>
-      <NavigationContainer>
-        <JobProvider>
-          <RootStackScreen />
-        </JobProvider>
-      </NavigationContainer>
-    </AuthProvider>
-  );
-};
+  const [isIntroDone, setIsIntroDone] = useState(false);
 
-////
+  useEffect(() => {
+    // if isIntroDone is changed then update the asyncstorage
+    if (isIntroDone) {
+      if (global.appType === 'boss') {
+        store.save('introDone', {bossIntroDone: true});
+      } else {
+        store.save('introDone', {userIntroDone: true});
+      }
+    }
+  }, [isIntroDone]);
+
+  store.get('introDone').then((introDoneArr) => {
+    console.log(introDoneArr);
+    if (introDoneArr) {
+      setIsIntroDone(true);
+    }
+  });
+
+  if (!isIntroDone) {
+    return <IntroSwiper onIntroDone={setIsIntroDone} />;
+  } else {
+    return (
+      <AuthProvider>
+        <NavigationContainer>
+          <JobProvider>
+            <RootStackScreen />
+          </JobProvider>
+        </NavigationContainer>
+      </AuthProvider>
+    );
+  }
+};

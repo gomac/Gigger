@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView,
   StyleSheet,
   Dimensions,
 } from 'react-native';
@@ -96,13 +97,13 @@ const JobController = (props) => {
   const tileDimensions = calcTileDimensions(width, 2);
 
   return (
-    <ScrollView>
+    <SafeAreaView>
       <View style={styles.container}>
         {screens.map((screen, index) =>
           Item({...tileDimensions, screen: screen}, index),
         )}
       </View>
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 

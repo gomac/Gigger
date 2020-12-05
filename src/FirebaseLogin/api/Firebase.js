@@ -118,7 +118,7 @@ export const createFirebaseAccount = (name, company, email, password) => {
         if (info) {
           auth().onAuthStateChanged((user) => {
             if (user) {
-              this.createUserRecord(info, user, name, company, email, password);
+              createUserRecord(info, user, name, company, email, password);
               // User is signed in.
               auth().currentUser.updateProfile({
                 displayName: name,

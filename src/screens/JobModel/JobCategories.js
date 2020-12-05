@@ -7,6 +7,7 @@ import {useForm, Controller} from 'react-hook-form';
 import firestore from '@react-native-firebase/firestore';
 import {Button} from '../../components/Button';
 import {updateJobCategories} from '../../model';
+import {refDataToMultiSLFormat} from '../../Utils/helpers';
 
 const JobCategories = (props) => {
   const {isNewJob, jobObj, updJobObj} = useJob();
@@ -26,51 +27,6 @@ const JobCategories = (props) => {
   );
 
   console.log('errors ', errors);
-
-  const refDataToMultiSLFormat = (obj) => {
-    // needs to look like this
-    /*
-      const outArr = [
-      // this is the parent or 'item'
-      {
-        name: 'Building and related trades workers, excluding electricians',
-        id: 0,
-        // these are the children or 'sub items'
-          children: [
-            {
-              name: 'Building finishers and related trades workers:',
-              id: 10,
-            },
-            {
-              name: 'Building frame and related trades workers',
-              id: 17,
-            }
-          ] */
-    let outArr = [];
-
-    obj.docs.map((doc, index) => {
-      //console.log("heading ", heading)
-      let outItem = {};
-      //substring sort key which is first two digits
-      outItem.title = doc.id.substring(2);
-      outItem.id = 100 * (index + 1);
-      //console.log("outItem.id ", outItem.id)
-      // now map children
-      let childArr = [];
-      const children = Object.keys(doc.data());
-      children.map((child, index2) => {
-        let outChild = {};
-        //console.log("child ", child)
-        outChild.title = child;
-        outChild.id = outItem.id + (index2 + 1);
-        //console.log("outChild.id ", outChild.id)
-        childArr.push(outChild);
-      });
-      outItem.children = childArr;
-      outArr.push(outItem);
-    });
-    return outArr;
-  };
 
   let outArr;
   if (!refData) {

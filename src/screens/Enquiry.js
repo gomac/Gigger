@@ -17,10 +17,9 @@ import RNPickerSelect from 'react-native-picker-select';
 //import { material }                 from 'react-native-typography';
 import {uploadRecording} from '../components/DBHelpers';
 //import NumericInput                 from 'react-native-numeric-input'
-import {NavigationEvents} from '@react-navigation/native';
-import {firebaseDB} from '../config/FirebaseConfig';
+import {updateApplication} from '../model';
 import DropdownAlert from 'react-native-dropdownalert';
-import PhoneInput from 'react-native-phone-input';
+//import PhoneInput from 'react-native-phone-input';
 import * as Progress from 'react-native-progress';
 import {testProperties} from '../../src/Utils/TestProperties';
 
@@ -32,30 +31,18 @@ const {width, height: screenHeight} = Dimensions.get('window');
 //          fields to add some comments
 //          update pending node in firebase with details
 export default class Enquiry extends Component {
-  static navigationOptions = ({navigation}) => {
-    const {jobObj} = this.props.route.params;
-    let header = `Job Enquiry`;
-    if (typeof jobObj != 'undefined') {
-      header = `${jobObj.name}`;
-    }
-
-    return {
-      title: navigation.getParam('Title', header),
-      headerStyle: {
-        textAlign: 'right',
-        backgroundColor: navigation.getParam('BackgroundColor', '#8cd3ce'),
-      },
-      headerTintColor: navigation.getParam('HeaderTintColor', '#fff'),
-    };
-  };
-
   constructor(props) {
     super(props);
     this.props = props;
 
+    this.recPlayer = React.createRef();
+
     let filename = '';
     this.state = {
       // state for the video player
+      newTime: 0,
+      refreshPlayerTime: false,
+      pauseMainPlayer: false,
       paused: true,
       playWhenInactive: false,
       playInBackground: false,
@@ -63,7 +50,10 @@ export default class Enquiry extends Component {
       recordings: [],
       recordingPickerSelectedItem: undefined,
       toggleVideo: filename ? true : false,
-      //videoURL: { uri: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" },
+      //videoURL: {
+      //   uri:
+      //     'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+      //},
       videoHeight: width * 0.5625,
       videoURL: {uri: filename},
       rate: 1,
@@ -87,7 +77,7 @@ export default class Enquiry extends Component {
     this.alreadyApplied = false;
     //only interested in occ one
     this.jobObj = this.props.route.params.jobObj;
-    this.myEnqObj = Object.values(this.props.route.params.myEnqObj)[0];
+    //this.myEnqObj = Object.values(this.props.route.params.myEnqObj)[0];
 
     if (typeof this.myEnqObj !== 'undefined') {
       //if (this.myEnqObj.status==="accepted" ||this.myEnqObj.status==="rejected") {
@@ -103,12 +93,36 @@ export default class Enquiry extends Component {
     this.loadRecordings();
   }
 
+  onProgress = (currentTime) => {
+    //this.currentTime = data.currentTime;
+    this.setState({currentTime: currentTime});
+    //console.log('current time: ', this.state.currentTime);
+  };
+
+  onEnd = () => {
+    //console.log('onEnd: pause play')
+    //this.setState({feedbackPaused: true}, () => this.recPlayer.seekTo(0));
+    this.setState({
+      feedbackPaused: true,
+      currentTime: 0,
+      pauseMainPlayer: false,
+    });
+  };
+
   updatePhoneInfo = () => {
     this.setState({
       phoneValid: this.phone.isValidNumber(),
       phoneType: this.phone.getNumberType(),
       phoneValue: this.phone.getValue(),
     });
+  };
+
+  jumpToPosAndPlay = (posTime) => {
+    //console.log('jumpToPosAndPlay');
+    //this.setState({paused: false}, () => this.recPlayer.current.seek(posTime));
+    this.setState({newTime: posTime, refreshPlayerTime: true}, () =>
+      this.setState({refreshPlayerTime: false}),
+    );
   };
 
   loadRecordings = () => {
@@ -118,7 +132,7 @@ export default class Enquiry extends Component {
     // console.log("loadRecordings: global.UID is: ", global.UID);
     store
       .get(global.UID)
-      .then(res => {
+      .then((res) => {
         if (Array.isArray(res) && res.length) {
           this.setState({recordings: [...res]});
         } else {
@@ -129,50 +143,8 @@ export default class Enquiry extends Component {
           }
         }
       })
-      .catch(error => {
+      .catch((error) => {
         //console.log("Promise is rejected with error: " + error);
-      });
-  };
-
-  dbUpdate = enquiryObj => {
-    const refPending = firebaseDB.ref('/pending');
-    let node = '/' + global.UID + '/';
-
-    refPending
-      .child(global.job)
-      .update({[node]: enquiryObj}, error => {
-        if (error) {
-          Snackbar.show({
-            title: 'Enquiry could not be saved' + error,
-            duration: Snackbar.LENGTH_LONG,
-          });
-        } else {
-          const msg = `Enquiry sent. Please wait for consideration.`;
-          const INTERVAL = 4000;
-          this.dropdown.alertWithType(
-            'info',
-            `Enquiry sent`,
-            msg,
-            {},
-            INTERVAL,
-          );
-          //this.didUpdate()
-        }
-      })
-      .then(() => {
-        // 2 ADD JOB TO USER
-        /* We need this because when the user logs in we want a quck list
-            of their jobs. We don't want to have to look through all jobs
-            to see if applicant is enrolled */
-        let node = 'jobs/' + global.job;
-        const usersFromFB = firebaseDB.ref('/users');
-        usersFromFB.child(UID).update({[node]: 'current'}, error => {
-          if (error) {
-            // console.log("Data could not be saved." + error);
-          } else {
-            // console.log("Job saved successfully.");
-          }
-        });
       });
   };
 
@@ -199,13 +171,14 @@ export default class Enquiry extends Component {
       }
 
       // check phone number
-      if (!this.phone.isValidNumber()) {
-        alert('You must enter a valid phone number');
-        return;
-      }
+      //if (!this.phone.isValidNumber()) {
+      //  alert('You must enter a valid phone number');
+      //  return;
+      //}
 
       // there might be a video even though one is not required
       const enquiryObj = {};
+      enquiryObj.job_id = this.jobObj.job_id;
       enquiryObj.changedDate = Date.now();
       enquiryObj.status = 'pending';
       enquiryObj.message = this.state.myMessage;
@@ -218,17 +191,21 @@ export default class Enquiry extends Component {
       enquiryObj.name = global.displayName;
       enquiryObj.messageType = '';
       enquiryObj.recording = '';
-      enquiryObj.contactPhone = this.phone.getValue();
-      uploadRecording(this.state.videoURL, this.updateProgress).then(
-        (response, reject) => {
-          if (response) {
-            this.setState({doUpload: true});
-            enquiryObj.messageType = 'video';
-            enquiryObj.recording = response.headers.Location;
-          }
-          this.dbUpdate(enquiryObj);
-        },
-      );
+      //enquiryObj.contactPhone = this.phone.getValue();
+
+      updateApplication({enquiryObj});
+
+      if (this.state.videoURL) {
+        uploadRecording(this.state.videoURL, this.updateProgress).then(
+          (response, reject) => {
+            if (response) {
+              this.setState({doUpload: true});
+              enquiryObj.messageType = 'video';
+              enquiryObj.recording = response.headers.Location;
+            }
+          },
+        );
+      }
     }
   };
 
@@ -237,7 +214,7 @@ export default class Enquiry extends Component {
     navigation.goBack();
   };
 
-  updateVideo = url => {
+  updateVideo = (url) => {
     this.setState({videoURL: url});
   };
 
@@ -259,7 +236,7 @@ export default class Enquiry extends Component {
     return this.state.toggleVideo ? (
       <View style={{width, height: this.state.videoHeight}}>
         <Video
-          ref={ref => {
+          ref={(ref) => {
             this.recPlayer = ref;
           }}
           paused={this.state.paused}
@@ -317,7 +294,7 @@ export default class Enquiry extends Component {
     }
   };
 
-  updateProgress = count => {
+  updateProgress = (count) => {
     this.setState({progressCount: parseInt(count, 10) * 100});
   };
 
@@ -335,14 +312,6 @@ export default class Enquiry extends Component {
   };
 
   render() {
-    const initialJobData = {
-      status: '',
-      enrolmentEndDate: '',
-      jobEndDate: '',
-      maxApplicantNum: 5,
-      jobVisibility: 'false',
-    };
-
     return (
       <View
         style={[width, styles.container]}
@@ -424,11 +393,13 @@ export default class Enquiry extends Component {
                     {!this.alreadyApplied ? (
                       <View style={styles.container}>
                         <TextInput
-                          ref={input => {
+                          ref={(input) => {
                             this.textExerciseInstructionsInput = input;
                           }}
                           value={this.state.myMessage}
-                          onChangeText={myMessage => this.setState({myMessage})}
+                          onChangeText={(myMessage) =>
+                            this.setState({myMessage})
+                          }
                           placeholder="Brief request to employer"
                           editable={true}
                           multiline={true}
@@ -445,7 +416,7 @@ export default class Enquiry extends Component {
                           autoGrow={true}
                         />
                         <Text style={styles.text}>Add a phone number:</Text>
-                        <PhoneInput
+                        {/*                         <PhoneInput
                           style={[
                             styles.text,
                             {
@@ -463,7 +434,7 @@ export default class Enquiry extends Component {
                           ref={ref => {
                             this.phone = ref;
                           }}
-                        />
+                        /> */}
 
                         {/**<TouchableOpacity onPress={this.updatePhoneInfo} style={styles.button}>
                           <Text>Get Info</Text>
@@ -519,7 +490,7 @@ export default class Enquiry extends Component {
                           autoGrow={true}
                         />
                         <Text style={styles.text}>My phone number:</Text>
-                        <PhoneInput
+                        {/*                         <PhoneInput
                           disabled={true}
                           style={[
                             styles.text,
@@ -538,7 +509,7 @@ export default class Enquiry extends Component {
                           ref={ref => {
                             this.phone = ref;
                           }}
-                        />
+                        /> */}
                       </View>
                     )}
                   </View>
@@ -604,7 +575,7 @@ export default class Enquiry extends Component {
                       </View>*/}
                 </View>
               </View>
-              <DropdownAlert ref={ref => (this.dropdown = ref)} />
+              <DropdownAlert ref={(ref) => (this.dropdown = ref)} />
               {!this.alreadyApplied && (
                 <Button
                   title="SEND THE ENQUIRY"
