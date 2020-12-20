@@ -12,7 +12,7 @@ export {
   GetJobsByJob_Id,
   GetJobsByCriteria,
   GetJobsInLocation,
-  GetJobIdsInLocation,
+  GetJobsInLocationOnce,
   GetRefData,
   GetJobsByCriteriaLocation,
   GetJobsByUidOnce,

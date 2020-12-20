@@ -42,7 +42,7 @@ export default class Register extends Component {
       errorMsg: false,
       checked: false,
     };
-    alert('Are you ok with this?');
+    //alert('Are you ok with this?');
   }
 
   createUserAccount = () => {

@@ -11,7 +11,7 @@ import {material} from 'react-native-typography';
 import moment from 'moment';
 import {ListItem} from 'react-native-elements';
 import {testProperties} from '../../src/Utils/TestProperties';
-import {GetJobsByCriteriaLocation, GetJobsByUidOnce} from '../model';
+import {GetJobsInLocationOnce} from '../model';
 import {dataToSectionListFormat} from '../Utils/helpers';
 import {StatusDisplay} from '../components/StatusDisplay';
 
@@ -21,63 +21,42 @@ const GREEN = (props) => <Text style={{color: 'green'}}>{props.children}</Text>;
 
 const Search = (props) => {
   const [data, setData] = useState([]);
-  const [curRadius, setCurRadius] = useState(200);
+  ///const [curRadius, setCurRadius] = useState(200);
   const [isLoading, setIsLoading] = useState(false);
-  const [dataFound, setDataFound] = useState(false);
+  //const [dataFound, setDataFound] = useState(false);
 
   let searchTerm = '';
   let searchAttribute = '';
   let searchByTitle = '';
   let ignoreCase = '';
 
-  // a criteria which should include a location
-  /*   let options = {
-    where: [
-      ['category', '==', 'someCategory'],
-      ['color', '==', 'red'],
-      ['author', '==', 'Sam'],
-    ],
-    orderBy: ['date', 'desc'],
-  }; */
-
-  //OR
-  // A single where
-  //
-  //let options = {where: ['category', '==', 'someCategory']};
-  /*   useEffect(() => {
-    const loc = {
-      center: [
-        props.route?.params?.region?.latitude,
-        props.route?.params?.region?.longitude,
-      ],
-    };
-    const options = props.route?.params?.selectedJobTypes;
-    //const jobArr = GetJobsByCriteriaLocation(loc, options);
-    let value = '';
-    let loading = '';
-    let error = '';
+  useEffect(() => {
+    setIsLoading(true);
+    const region = props.route.params.region;
+    const loc =
+      typeof props.route.params.selectedJobTypes !== 'undefined'
+        ? props.route.params.selectedJobTypes
+        : [];
     const fetchData = async () => {
-      [value, loading, error] = GetJobsByUid('bCsOx5WZs3YilVLuhqNKQiEZjrf2');
-      console.log('value ', value);
+      const arr = await GetJobsInLocationOnce(region);
 
+      setData(arr);
+      setIsLoading(false);
     };
+
     fetchData();
-  }, []); */
-  let value = '';
-  let loading = '';
-  let error = '';
-  [value, loading, error] = GetJobsByUidOnce(global.UID);
+  }, []);
 
-  console.log('value ', value);
+  console.log('data ', data);
 
-  const renderItem = (item) => {
+  /*  const renderItem = (item) => {
     return (
       <View>
         <Text style={styles.item}>
-          <B>{item.terms.workTerms}</B>
+          <B>{item?.terms?.workTerms}</B>
         </Text>
         <Text style={styles.item}>
-          <B>Start date:</B> {item.terms.jobStartDate}
+          <B>Start date:</B> {item?.terms?.jobStartDate}
         </Text>
         <Text style={styles.item}>
           <B>End date: </B>
@@ -85,24 +64,24 @@ const Search = (props) => {
         </Text>
         <Text style={styles.item}>
           <B>Apply by:</B>
-          {item.terms.applicationEndDate}
+          {item?.terms?.applicationEndDate}
         </Text>
-        {item.videoRqdBool && (
+        {item?.videoRqdBool && (
           <Text style={styles.baseText}>
             <RED>*An introductory video is required</RED>
           </Text>
         )}
       </View>
     );
-  };
+  }; */
 
   function renderRowButton(item) {
     return (
       <View>
         <Button
           text={global.appType === 'boss' ? 'Applicants' : 'Enquire'}
-          onPress={() => console.log('row button')}
-          loading={loading}
+          onPress={() => enquire(item)}
+          loading={isLoading}
           type="small"
         />
         <StatusDisplay pendingNum="1" rejectedNum="1" acceptedNum="1" />
@@ -111,8 +90,8 @@ const Search = (props) => {
   }
 
   const renderHeader = () => {
-    if (global.appType === 'boss' && typeof value !== 'undefined') {
-      const label1 = value.length + ` Jobs:`;
+    if (global.appType === 'boss' && typeof data !== 'undefined') {
+      const label1 = data.length + ` Jobs:`;
       const label2 =
         'press a Job to go to Requirements for the Job or press Plus to Add a Job';
 
@@ -134,7 +113,7 @@ const Search = (props) => {
   };
 
   const renderFooter = () => {
-    if (!loading) {
+    if (!isLoading) {
       return null;
     } else {
       return (
@@ -208,17 +187,17 @@ const Search = (props) => {
         keyboardShouldPersistTaps={'handled'}
         {...testProperties('Search-screen')}>
         <View style={styles.container}>
-          {!value ? <Text style={styles.titleText}>No Jobs Found</Text> : null}
+          {!data ? <Text style={styles.titleText}>No Jobs Found</Text> : null}
           {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
-          {value ? (
+          {data ? (
             <FlatList
-              data={value}
+              data={data}
               keyExtractor={(item, index) => index.toString()}
               ListHeaderComponent={renderHeader}
               renderItem={({item, index}) => (
                 <ListItem
                   key={index}
-                  rightElement={() => renderRowButton()}
+                  leftElement={() => renderRowButton(item)}
                   onPress={() => {
                     enquire(item);
                   }}>
@@ -230,7 +209,7 @@ const Search = (props) => {
               )}
               ItemSeparatorComponent={renderSeparator}
               ListFooterComponent={renderFooter}
-              refreshing={loading}
+              refreshing={isLoading}
             />
           ) : null}
         </View>

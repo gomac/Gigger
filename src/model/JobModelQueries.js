@@ -38,24 +38,23 @@ export const GetJobsByJob_Id = (job_id) => {
   //return firestore().collection('jobs').where('job_id', '==', job_id);
 };
 
-export const GetJobsInLocation = async (loc) => {
+export const GetJobsInLocationOnce = async (loc) => {
   let outerArr = [];
-  await GetJobIdsInLocation(loc).then(async (arr) => {
-    //console.log('arr ', arr);
-    const snapshot = await firestore()
-      .collection('jobs')
-      .where('job_id', 'in', arr)
-      .orderBy('name')
-      .get();
+  let arr = [];
+  arr = await GetJobIdsInLocation(loc);
+  const snapshot = await firestore()
+    .collection('jobs')
+    .where('job_id', 'in', arr)
+    .orderBy('name')
+    .get();
 
-    if (snapshot) {
-      snapshot.docs.map((doc) => {
-        //job_idArr(...job_idArr, ...doc.data());
-        //console.log('doc.data ', doc.data());
-        outerArr.push(doc.data());
-      });
-    }
-  });
+  if (snapshot) {
+    snapshot.docs.map((doc) => {
+      outerArr.push(doc.data());
+    });
+  }
+
+  console.log('outerArr ', outerArr);
   return outerArr;
 };
 
@@ -74,7 +73,7 @@ export const GetJobIdsInLocation = (loc) => {
 
     // Create a GeoQuery based on a location
     const query = geocollection.near({
-      center: new firestore.GeoPoint(-35.28084890545406, 149.1243713382363),
+      center: new firestore.GeoPoint(loc.latitude, loc.longitude),
       radius: 1000,
     });
 
@@ -83,10 +82,12 @@ export const GetJobIdsInLocation = (loc) => {
     query
       .get()
       .then((value) => {
-        // All GeoDocument returned by GeoQuery, like the GeoDocument added above
-        value.docs.map((doc) => {
-          job_idArr.push(doc.data().job_id);
-        });
+        if (value?.docs?.length > 0) {
+          // All GeoDocument returned by GeoQuery, like the GeoDocument added above
+          value.docs.map((doc) => {
+            job_idArr.push(doc.data().job_id);
+          });
+        }
       })
       .then(() => {
         resolve(job_idArr);

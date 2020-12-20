@@ -1,76 +1,27 @@
 import React, {Component} from 'react';
-import {
-  AppRegistry,
-  Keyboard,
-  StyleSheet,
-  Text,
-  View,
-  StatusBar,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Platform,
-  Image,
-} from 'react-native';
-import {DrawerActions, NavigationActions} from '@react-navigation/native';
-import {AuthContext} from '../Utils/context';
+import {StyleSheet, Text, View, StatusBar, Platform} from 'react-native';
 
 export default class Settings extends Component {
-  static contextType = AuthContext;
+  //static contextType = AuthContext;
 
   constructor(props) {
     super(props);
   }
 
-  showFields = name => {
-    const CustomTag = `<View style={styles.container}> <${name}/></View>`;
-    return CustomTag;
-  };
-
-  showApplicantDetails = (applicant, exercies = []) => {
-    //console.log("Settings showApplicantDetails ", applicant)
-
-    //console.log("navigate to Tabs")
-    this.props.navigation.navigate('home', {...applicant});
-    //("close drawer")
-    this.props.navigation.dispatch(DrawerActions.closeDrawer());
-  };
-
-  signOut = () => {
-    const {signOut} = this.context;
-    signOut();
-  };
-
-  render() {
-    // now set in router logon process
-    //onst user = this.props.navigation.getParam('user');
-    //const {user} = this.props.route.params;
-
-    //console.log("Settings User: ", user.uid);
-    //global.UID = user.uid;
-    //global.displayName = user.displayName;
-    //console.log("Settings global.UID : ", global.UID);
-
+  customMenu = () => {
     return (
-      <View style={styles.container}>
+      <View>
         <StatusBar backgroundColor="#303f9f" />
         <Text>Name: {global.displayName}</Text>
         <Text>Email: {global.email}</Text>
-        {global.appType != 'user' && (
-          <View>
-            <Text>Position: {global.appType}</Text>
-            <Text>Company: {global.company}</Text>
-          </View>
-        )}
-        <Text />
-        <ScrollView keyboardShouldPersistTaps={'handled'}>
-          {/**<Provider showApplicant={this.showApplicantDetails}/>*/}
-          <View style={styles.menuItem}>
-            <Text onPress={this.signOut}>SignOut</Text>
-          </View>
-        </ScrollView>
+        <Text>Position: {global.appType}</Text>
+        {global.appType === 'boss' && <Text>Company: {global.company}</Text>}
       </View>
     );
+  };
+
+  render() {
+    return this.customMenu();
   }
 }
 

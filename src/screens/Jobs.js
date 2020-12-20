@@ -52,7 +52,7 @@ const Jobs = (props) => {
   //else {
   // if this is a logged in user
   // get the locally save previous search
-  //     GetJobsInLocation('abc').then((arr) => {
+  //     GetJobsInLocationOnce('abc').then((arr) => {
   //console.log('retDocsArr ', arr);
   //setValue([...arr]);
   //}); */

@@ -19,7 +19,7 @@ import {uploadRecording} from '../components/DBHelpers';
 //import NumericInput                 from 'react-native-numeric-input'
 import {updateApplication} from '../model';
 import DropdownAlert from 'react-native-dropdownalert';
-//import PhoneInput from 'react-native-phone-input';
+import PhoneInput from 'react-native-phone-number-input';
 import * as Progress from 'react-native-progress';
 import {testProperties} from '../../src/Utils/TestProperties';
 
@@ -36,7 +36,7 @@ export default class Enquiry extends Component {
     this.props = props;
 
     this.recPlayer = React.createRef();
-
+    this.phoneRef = React.createRef(null);
     let filename = '';
     this.state = {
       // state for the video player
@@ -70,6 +70,7 @@ export default class Enquiry extends Component {
       phoneValid: '',
       phoneType: '',
       phoneValue: '',
+      formattedValue: '',
       //allowedViewDays: 15,
       //noTimesToView: 5
     };
@@ -171,15 +172,16 @@ export default class Enquiry extends Component {
       }
 
       // check phone number
-      //if (!this.phone.isValidNumber()) {
-      //  alert('You must enter a valid phone number');
-      //  return;
-      //}
+      if (!this.phoneRef.current.isValidNumber(this.state.phoneValue)) {
+        alert('You must enter a valid phone number');
+        return;
+      }
 
       // there might be a video even though one is not required
       const enquiryObj = {};
       enquiryObj.job_id = this.jobObj.job_id;
-      enquiryObj.changedDate = Date.now();
+      enquiryObj.appliedDate = Date.now();
+      enquiryObj.name = global.displayName;
       enquiryObj.status = 'pending';
       enquiryObj.message = this.state.myMessage;
       let today = new Date();
@@ -191,7 +193,7 @@ export default class Enquiry extends Component {
       enquiryObj.name = global.displayName;
       enquiryObj.messageType = '';
       enquiryObj.recording = '';
-      //enquiryObj.contactPhone = this.phone.getValue();
+      enquiryObj.contactPhone = this.state.phoneValue;
 
       updateApplication({enquiryObj});
 
@@ -278,7 +280,7 @@ export default class Enquiry extends Component {
           <Text>
             Is Valid:{' '}
             <Text style={{fontWeight: 'bold'}}>
-              {this.state.phoneValid.toString()}
+              {this.state.phoneValue.toString()}
             </Text>
           </Text>
           <Text>
@@ -416,25 +418,24 @@ export default class Enquiry extends Component {
                           autoGrow={true}
                         />
                         <Text style={styles.text}>Add a phone number:</Text>
-                        {/*                         <PhoneInput
-                          style={[
-                            styles.text,
-                            {
-                              borderWidth: 1,
-                              color: '#5d5d5d',
-                              width: '50%',
-                              borderColor: '#1ca0ff',
-                            },
-                          ]}
-                          onPressFlag={() => {}}
+                        <PhoneInput
+                          defaultValue={this.state.phoneValue}
+                          layout="first"
+                          onChangeText={(text) => {
+                            this.setState({phoneValue: text});
+                          }}
+                          onChangeFormattedText={(text) => {
+                            this.setState({formattedValue: text});
+                          }}
+                          defaultCode={'AU'}
+                          countryPickerProps={{withAlphaFilter: true}}
+                          withShadow
+                          autoFocus
                           value={
                             this.state.phoneValue ? this.state.phoneValue : ''
                           }
-                          initialCountry={'au'}
-                          ref={ref => {
-                            this.phone = ref;
-                          }}
-                        /> */}
+                          ref={this.phoneRef}
+                        />
 
                         {/**<TouchableOpacity onPress={this.updatePhoneInfo} style={styles.button}>
                           <Text>Get Info</Text>

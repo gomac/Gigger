@@ -7,7 +7,7 @@ export const updateApplication = ({enquiryObj}) => {
     appliedDate,
     status,
     message,
-    applcantName,
+    name,
     messageType,
     recording,
     contactPhone,
@@ -22,7 +22,7 @@ export const updateApplication = ({enquiryObj}) => {
         appliedDate: appliedDate,
         status: status,
         message: message,
-        applcantName: applcantName,
+        name: name,
         messageType: messageType,
         recording: recording,
         contactPhone: contactPhone,
@@ -30,9 +30,9 @@ export const updateApplication = ({enquiryObj}) => {
       {merge: true},
     )
     .then(() => {
-      feedback(applcantName, '');
+      feedback(name, '');
     })
     .catch((error) => {
-      feedback(applcantName, error);
+      feedback(name, error);
     });
 };

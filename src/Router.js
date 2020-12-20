@@ -6,7 +6,9 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {Icon} from 'react-native-elements';
 import SideMenuIcon from './components/SideMenuIcon';
+import Settings from './screens/Settings';
 import Jobs from './screens/Jobs';
+import Home from './screens/Home';
 import Recordings from './screens/Recordings';
 import Splash from './screens/Splash';
 import FirebaseLogin from './FirebaseLogin';
@@ -33,6 +35,7 @@ const JobsStack = createStackNavigator();
 const Tabs = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 const RootStack = createStackNavigator();
+const SettingsStack = createStackNavigator();
 
 const AuthStackScreen = () => (
   <AuthStack.Navigator>
@@ -50,10 +53,61 @@ const AuthStackScreen = () => (
   </AuthStack.Navigator>
 );
 
+const SettingsStackScreen = () => {
+  return (
+    <SettingsStack.Navigator>
+      <SettingsStack.Screen
+        name="Settings"
+        component={Settings}
+        options={({navigation}) => ({
+          headerTitle: 'Settings',
+          headerMode: 'screen',
+          headerStyle: {
+            backgroundColor: '#5692CE',
+          },
+          headerTintColor: '#fff',
+          headerLeft: () => (
+            <Icon
+              type="ionicon"
+              name="arrow-back-outline"
+              size={35}
+              onPress={() => {
+                navigation.goBack(null);
+              }}
+            />
+          ),
+          headerRight: () => (
+            <Icon name="home" size={35} color={'#fff'} marginRight={10} />
+          ),
+        })}
+      />
+    </SettingsStack.Navigator>
+  );
+};
+
 const JobsStackScreen = () => (
   <JobsStack.Navigator>
     <JobsStack.Screen
       name="Home"
+      component={TabsScreen}
+      options={({navigation}) => ({
+        headerTitle: 'Home',
+        headerMode: 'screen',
+        headerStyle: {
+          backgroundColor: '#5692CE',
+        },
+        headerTintColor: '#fff',
+        headerLeft: () => (
+          <SideMenuIcon
+            onPress={() => navigation.toggleDrawer()}
+            title="Info"
+            color="#fff"
+          />
+        ),
+      })}
+    />
+    <JobsStack.Screen
+      name="Jobs"
       component={TabsScreen}
       options={({navigation}) => ({
         headerTitle: 'Home',
@@ -254,10 +308,10 @@ const JobsStackScreen = () => (
 const TabsScreen = () => (
   <Tabs.Navigator>
     <Tabs.Screen
-      name="Jobs"
-      component={Jobs}
+      name="Home"
+      component={Home}
       options={{
-        tabBarLabel: 'Jobs',
+        tabBarLabel: 'Home',
         gesturesEnabled: true,
         headerTitleStyle: {
           width: '90%',
@@ -319,7 +373,8 @@ const DrawerScreen = () => (
   <Drawer.Navigator
     drawerWidth={300}
     contentComponent={({navigation}) => <Tabs navigation={navigation} />}>
-    <Drawer.Screen name="Jobs" component={JobsStackScreen} />
+    <Drawer.Screen name="Home" component={JobsStackScreen} />
+    <Drawer.Screen name="Settings" component={SettingsStackScreen} />
     <Drawer.Screen
       name="Logout"
       options={{

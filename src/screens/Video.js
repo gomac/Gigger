@@ -33,9 +33,7 @@ export default class Video extends Component {
       // recordings metadata
       recordings: [],
       filename: '', // key
-      recordDate: moment(currentDate)
-        .format('YYYY-MM-DD')
-        .toString(),
+      recordDate: moment(currentDate).format('YYYY-MM-DD').toString(),
       description: '',
       popVisible: false,
     };
@@ -45,9 +43,9 @@ export default class Video extends Component {
     if (this._timerRef) this._timerRef.restart();
   };
 
-  takePicture = async function() {
+  takePicture = async function () {
     if (this.camera) {
-      this.camera.capture().catch(err => console.error(err));
+      this.camera.capture().catch((err) => console.error(err));
     }
   };
 
@@ -129,6 +127,7 @@ export default class Video extends Component {
 
   switchType = () => {
     let newType;
+    let newMirrorMode = false;
     const {back, front} = RNCamera.Constants.Type;
 
     if (this.state.type === back) {
@@ -197,7 +196,7 @@ export default class Video extends Component {
     return (
       <View style={styles.container}>
         <RNCamera
-          ref={cam => {
+          ref={(cam) => {
             this.camera = cam;
           }}
           style={styles.preview}
@@ -227,7 +226,7 @@ export default class Video extends Component {
         <View style={styles.countdownContainer}>
           {this.state.isRecording ? (
             <CircularTimer
-              ref={refs => (this._timerRef = refs)}
+              ref={(refs) => (this._timerRef = refs)}
               onTimeElapsed={() => {
                 // console.log('Timer Finished!');
               }}
@@ -282,7 +281,7 @@ export default class Video extends Component {
         </View>
         <Dialog
           visible={this.state.popVisible}
-          ref={popupDialog => {
+          ref={(popupDialog) => {
             this.popupDialog = popupDialog;
           }}
           containerStyle={{justifyContent: 'flex-start'}}
@@ -298,7 +297,7 @@ export default class Video extends Component {
               style={styles.addRecordingPopupDescriptionTextFieldsContainer}>
               <TextInput
                 style={styles.addRecordingPopupTextInput}
-                onChangeText={text => this.setState({description: text})}
+                onChangeText={(text) => this.setState({description: text})}
                 placeholder="Enter a recording description here."
               />
             </View>
