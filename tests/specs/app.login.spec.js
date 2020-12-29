@@ -1,4 +1,4 @@
-import LoginScreen from '../screenobjectslogin.screen';
+import LoginScreen from '../screenobjects/login.screen';
 import hamburgerScreen from '../screenobjects/hamburger.screen';
 import HomeScreen from '../screenobjects/home.screen';
 //import ErrorField from '../screenobjects/components/error.field';

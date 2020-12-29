@@ -1,12 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
-  Dimensions,
   FlatList,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
-  TouchableOpacity,
   Text,
   View,
 } from 'react-native';
@@ -15,66 +12,97 @@ import moment from 'moment';
 import {w, h, totalSize} from '../Utils/Dimensions';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import SectionedMultiSelect from 'react-native-sectioned-multi-select';
-import MapInput from '../components/MapInput';
-import {refDataToMultiSLFormat, flattenObject} from '../Utils/helpers';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {ListItem} from 'react-native-elements';
 import {Button} from '../components/Button';
 import {StatusDisplay} from '../components/StatusDisplay';
 import {testProperties} from '../Utils/TestProperties';
-import {GetJobsByUid, GetRefData} from '../model';
+import {flattenObject} from '../Utils/fp_helpers';
+import {
+  GetApplicationsByJobId,
+  GetApplicationsByUid,
+  GetJobsByUid,
+  GetJobsInLocationOnce,
+} from '../model';
 
 const B = (props) => <Text style={{fontWeight: 'bold'}}>{props.children}</Text>;
 const RED = (props) => <Text style={{color: 'red'}}>{props.children}</Text>;
 
 const Jobs = (props) => {
   const {setNewJob, loadJobObj} = useJob();
-  const [markerLoc, setMarkerLoc] = useState([]);
-  const [val, setValue] = useState([]);
-  const [selectedJobTypes, setSelectedJobTypes] = useState();
-  const [region, setRegion] = useState({});
+  const [applications, setApplications] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [jobs, setjobs] = useState([]);
 
-  const MSListRef = useRef();
-  //two modes:  1 get default list. getJobsByUid for BOSS and
-  //            2 custom search
-  // steps:     get mode and call search component to return job array
+  const mode = props.route?.params?.mode;
+
+  // 3 MODES
+  // 1 'bossJobs' for Boss - get jobs for boss UID
+  // 2 'applicastions' - get jobs for applicant UID
+  // 3 'search' - for jobs - get jobs for criteria
 
   let loading = null;
   let error = null;
   let value = null;
-  let refData = null;
-  if (global.appType === 'boss') {
+  // this fn calls the react-firebase-hooks. the only problem
+  // is that is does a useEffect inside and sets up a listener
+  if (mode === 'bossJobs') {
     [value, loading, error] = GetJobsByUid(global.UID);
-  } else {
-    [refData, loading, error] = GetRefData();
-  }
-  //else {
-  // if this is a logged in user
-  // get the locally save previous search
-  //     GetJobsInLocationOnce('abc').then((arr) => {
-  //console.log('retDocsArr ', arr);
-  //setValue([...arr]);
-  //}); */
-  //}
-
-  console.log('errors ', error);
-
-  let outArr;
-  if (!refData) {
-    // TODO user friendly message
-    console.log('ref data not found');
-  } else {
-    outArr = refDataToMultiSLFormat(refData);
   }
 
-  console.log('value ', value);
+  const func = (acc, appln) => {
+    return {...acc, [appln.status]: (acc[appln.status] || 0) + 1};
+  };
+
+  useEffect(() => {
+    if (mode === 'bossJobs') {
+      if (value) {
+        //use job_id from jobs to get applications
+        GetApplicationsByJobId(value).then((applnsArr) => {
+          setApplications(applnsArr);
+
+          console.log('applnsArr ', applnsArr);
+
+          const countsArr = Object.entries(applnsArr).map((applns) =>
+            applns[1].reduce(func, {
+              job_id: applns[0],
+              pending: 0,
+              accepted: 0,
+              rejected: 0,
+            }),
+          );
+          console.log('countsArr ', countsArr);
+        });
+        setjobs(value);
+      }
+    } else if (mode === 'applications') {
+      GetApplicationsByUid(global.UID).then((arr) => {
+        setApplications(arr);
+      });
+    } else if (mode === 'search') {
+      setIsLoading(true);
+      const region = props.route.params.region;
+      const loc =
+        typeof props.route.params.selectedJobTypes !== 'undefined'
+          ? props.route.params.selectedJobTypes
+          : [];
+      const fetchData = async () => {
+        const arr = await GetJobsInLocationOnce(region, loc);
+
+        setjobs(arr);
+        setIsLoading(false);
+      };
+
+      fetchData();
+    } else {
+      console.log('mode not found');
+    }
+  }, [jobs, value, mode, props.route?.param]);
 
   function renderRowButton(item) {
     return (
       <View>
         <Button
-          text={global.appType === 'boss' ? 'Applicants' : 'Enquire'}
+          text={'Applicants'}
           onPress={() => console.log('row button')}
           loading={loading}
           type="small"
@@ -92,22 +120,22 @@ const Jobs = (props) => {
   };
 
   const renderHeader = () => {
-    if (global.appType === 'boss' && typeof value !== 'undefined') {
-      const label1 = value.length + ` Jobs:`;
+    if (typeof jobs !== 'undefined') {
+      const label1 = jobs?.length + ' Jobs:';
       const label2 =
         'press a Job to go to Requirements for the Job or press Plus to Add a Job';
 
       return (
         <View style={styles.header}>
-          <Text style={styles.titleText}>
+          <Text style={styles.headingText}>
             {label1}
             <Text style={styles.baseText}>
-              <Text style={styles.titleText}>
+              <Text style={styles.headingText}>
                 <Text style={styles.baseText} />
               </Text>
             </Text>
           </Text>
-          <Text>{label2}</Text>
+          <Text style={styles.headingText}>{label2}</Text>
         </View>
       );
     }
@@ -174,41 +202,9 @@ const Jobs = (props) => {
     );
   };
 
-  const getCoordsFromName = (loc) => {
-    updateState({
-      latitude: loc.geometry.location.lat,
-      longitude: loc.geometry.location.lng,
-    });
-  };
-
-  const updateState = (location) => {
-    setRegion({
-      latitude: location.latitude,
-      longitude: location.longitude,
-      latitudeDelta: 0.09,
-      longitudeDelta: 0.09,
-    });
-  };
-
   const goToWizard = () => {
     setNewJob();
     props.navigation.navigate('AddJobWizard');
-  };
-
-  const renderLoading = () => {
-    if (!region['latitude']) {
-      return (
-        <View style={{marginTop: 100}}>
-          <ActivityIndicator color="black" animating size="large" />
-        </View>
-      );
-    }
-  };
-
-  const setJobType = (category) => {
-    setSelectedJobTypes(category);
-    //navigate to the map with the selectedJobTypes. Get the
-    //coordinates when loading the map because they might change location
   };
 
   return (
@@ -218,124 +214,9 @@ const Jobs = (props) => {
       colors={['#5692CE', '#5E82E3']}
       style={{flex: 1}}>
       <SafeAreaView {...testProperties('List')} style={styles.bottomContainer}>
-        {global.appType !== 'boss' ? (
-          <View style={{width: '100%'}} accessibilityLabel="home-view">
-            <ScrollView keyboardShouldPersistTaps="handled">
-              <View>
-                <View
-                  style={{
-                    flex: 1,
-                    flexDirection: 'column',
-                    marginLeft: 20,
-                    marginRight: 20,
-                    marginTop: 20,
-                  }}>
-                  <Text style={styles.h3}>Where</Text>
-                  <MapInput
-                    {...testProperties('Location')}
-                    primeHome={true}
-                    style={{marginLeft: 10}}
-                    notifyChange={(loc) => getCoordsFromName(loc)}
-                  />
-                </View>
-                <Text style={styles.h3}>What</Text>
-                <ScrollView
-                  keyboardShouldPersistTaps="handled"
-                  contentContainerStyle={styles.newContainer}>
-                  <SectionedMultiSelect
-                    {...testProperties('Category')}
-                    items={outArr}
-                    ref={MSListRef}
-                    uniqueKey="id"
-                    subKey="children"
-                    displayKey="title"
-                    autoFocus
-                    modalWithTouchable
-                    modalWithSafeAreaView
-                    // showCancelButton
-                    // headerComponent={this.SelectOrRemoveAll}
-                    // hideConfirm
-                    // filterItems={this.filterItems}
-                    // alwaysShowSelectText
-                    // customChipsRenderer={this.customChipsRenderer}
-                    chipsPosition="top"
-                    //searchAdornment={searchTerm => this.searchAdornment(searchTerm)}
-                    // noResultsComponent={this.noResults}
-                    //iconRenderer={this.icon}
-                    //  cancelIconComponent={<Text style={{color:'white'}}>Cancel</Text>}
-                    showDropDowns={true}
-                    expandDropDowns={true}
-                    animateDropDowns={true}
-                    readOnlyHeadings={false}
-                    selectText="Choose job categories..."
-                    single={false}
-                    showRemoveAll={true}
-                    parentChipsRemoveChildren={true}
-                    selectChildren={true}
-                    hideSearch={false}
-                    //  itemFontFamily={fonts.boldCondensed}
-                    // this isnt ideal but there are two update props. something's gotta give
-                    // using curried function to specialise
-                    //onSelectedItemsChange={setSelectedJobTypes}
-                    onSelectedItemsChange={setJobType}
-                    //onSelectedItemObjectsChange={onSelectedItemObjectsChange}
-                    selectedItems={selectedJobTypes}
-                    colors={{primary: '#5c3a9e', success: '#5c3a9e'}}
-                    itemNumberOfLines={3}
-                    selectLabelNumberOfLines={3}
-                    styles={{
-                      chipText: {
-                        maxWidth: Dimensions.get('screen').width - 90,
-                      },
-                      //itemText: {
-                      //  color: props.selectedJobTypes.length ? 'black' : 'lightgrey'
-                      //},
-                      selectedItemText: {
-                        color: 'blue',
-                      },
-                      //subItemText: {
-                      //  color: props.selectedJobTypes.length ? 'black' : 'lightgrey'
-                      //},
-                      item: {
-                        paddingHorizontal: 10,
-                      },
-                      subItem: {
-                        paddingHorizontal: 10,
-                      },
-                      selectedItem: {
-                        backgroundColor: 'rgba(0,0,0,0.1)',
-                      },
-                      selectedSubItem: {
-                        backgroundColor: 'rgba(0,0,0,0.1)',
-                      },
-                      // selectedSubItemText: {
-                      //   color: 'blue',
-                      // },
-                      scrollView: {paddingHorizontal: 0},
-                    }}
-                    // cancelIconComponent={<Icon size={20} name="close" style={{ color: 'white' }} />}
-                  />
-                </ScrollView>
-                <TouchableOpacity
-                  {...testProperties('Search-button')}
-                  style={styles.button}
-                  onPress={() => {
-                    !region['latitude']
-                      ? renderLoading
-                      : props.navigation.navigate('Search', {
-                          region: region,
-                          selectedJobTypes: selectedJobTypes,
-                        });
-                  }}>
-                  <Text style={styles.text}>Search Now</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        ) : null}
         {error && <Text>{('error: ', error)}</Text>}
         <FlatList
-          data={value}
+          data={jobs}
           keyExtractor={(item, index) => index.toString()}
           ListHeaderComponent={renderHeader}
           renderItem={({item, index}) => (
@@ -355,16 +236,15 @@ const Jobs = (props) => {
           ListFooterComponent={renderFooter}
           refreshing={loading}
         />
-        {global.appType === 'boss' ? (
-          <Icon
-            style={{position: 'absolute', bottom: 0, alignSelf: 'center'}}
-            reverse
-            name="plus-circle"
-            size={55}
-            color="rgba(231,76,60,1)"
-            onPress={goToWizard}
-          />
-        ) : null}
+
+        <Icon
+          style={{position: 'absolute', bottom: 0, alignSelf: 'center'}}
+          reverse
+          name="plus-circle"
+          size={55}
+          color="rgba(231,76,60,1)"
+          onPress={goToWizard}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -459,6 +339,11 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#CED0CE',
     marginLeft: '0%',
+  },
+  headingText: {
+    fontFamily: 'Cochin',
+    fontWeight: 'normal',
+    color: 'white',
   },
   newContainer: {
     width: '90%',

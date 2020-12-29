@@ -19,3 +19,8 @@ export {
 } from './JobModelQueries';
 
 export {updateApplication} from './ApplicationModelUpdates';
+
+export {
+  GetApplicationsByJobId,
+  GetApplicationsByUid,
+} from './ApplicationModelQueries.js';

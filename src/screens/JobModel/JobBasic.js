@@ -5,6 +5,7 @@ import {TextField} from '../../components/FormFields';
 import {MultLineTextField} from '../../components/FormFields';
 import {useForm, Controller} from 'react-hook-form';
 import {Button} from '../../components/Button';
+import {testProperties} from '../../Utils/TestProperties';
 import {createNewJob, updateJobBasic} from '../../model';
 
 const JobBasic = (props) => {
@@ -38,6 +39,7 @@ const JobBasic = (props) => {
           <TextField
             value={jobObj.name}
             placeholder="Enter new job name here"
+            {...testProperties('Job-name')}
             name={'newJobName'}
             style={styles.singleField}
             onBlur={onBlur}
@@ -52,6 +54,7 @@ const JobBasic = (props) => {
       <MultLineTextField
         value={jobObj.description}
         placeholder="Enter the job description"
+        {...testProperties('Job-description')}
         onChangeText={(val) => updJobObj('description', val)}
         maxLength={2000}
         numberOfLines={3}
@@ -71,6 +74,7 @@ const JobBasic = (props) => {
       <Button
         text="Save Details"
         accessibilityLabel="Save Details"
+        {...testProperties('Save-details')}
         onPress={handleSubmit(onSubmit)}
       />
     </View>

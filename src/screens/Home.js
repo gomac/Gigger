@@ -24,7 +24,7 @@ import {GetJobsByUid, GetRefData} from '../model';
 const Home = (props) => {
   const {setNewJob, loadJobObj} = useJob();
   const [markerLoc, setMarkerLoc] = useState([]);
-  const [val, setValue] = useState([]);
+  //const [val, setValue] = useState([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState();
   const [region, setRegion] = useState({});
 
@@ -38,7 +38,7 @@ const Home = (props) => {
   let value = null;
   let refData = null;
   if (global.appType === 'boss') {
-    [value, loading, error] = GetJobsByUid(global.UID);
+    //[value, loading, error] = GetJobsByUid(global.UID);
   } else {
     [refData, loading, error] = GetRefData();
   }
@@ -61,7 +61,7 @@ const Home = (props) => {
     outArr = refDataToMultiSLFormat(refData);
   }
 
-  console.log('value ', value);
+  //console.log('value ', value);
 
   const getCoordsFromName = (loc) => {
     updateState({
@@ -212,6 +212,7 @@ const Home = (props) => {
                     !region['latitude']
                       ? renderLoading
                       : props.navigation.navigate('Search', {
+                          mode: 'search',
                           region: region,
                           selectedJobTypes: selectedJobTypes,
                         });
@@ -222,7 +223,7 @@ const Home = (props) => {
                 <TouchableOpacity
                   style={styles.button}
                   onPress={() => {
-                    props.navigation.navigate('Jobs');
+                    props.navigation.navigate('Jobs', {mode: 'applications'});
                   }}>
                   <Text style={styles.text}>My Enquiries</Text>
                 </TouchableOpacity>
@@ -241,7 +242,7 @@ const Home = (props) => {
                 <TouchableOpacity
                   style={styles.button}
                   onPress={() => {
-                    props.navigation.navigate('Jobs');
+                    props.navigation.navigate('Jobs', {mode: 'bossJobs'});
                   }}>
                   <Text style={styles.text}>My Jobs</Text>
                 </TouchableOpacity>

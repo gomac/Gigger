@@ -13,7 +13,6 @@ import Recordings from './screens/Recordings';
 import Splash from './screens/Splash';
 import FirebaseLogin from './FirebaseLogin';
 import LogOut from './FirebaseLogin/screens/LogOut';
-import {NetworkContext} from './Utils/NetworkProvider';
 import Video from './screens/Video';
 import Enquiry from './screens/Enquiry';
 import {AuthProvider, useAuth} from './Utils/AuthContext';
@@ -108,21 +107,14 @@ const JobsStackScreen = () => (
     />
     <JobsStack.Screen
       name="Jobs"
-      component={TabsScreen}
+      component={Jobs}
       options={({navigation}) => ({
-        headerTitle: 'Home',
+        headerTitle: 'Jobs',
         headerMode: 'screen',
         headerStyle: {
           backgroundColor: '#5692CE',
         },
         headerTintColor: '#fff',
-        headerLeft: () => (
-          <SideMenuIcon
-            onPress={() => navigation.toggleDrawer()}
-            title="Info"
-            color="#fff"
-          />
-        ),
       })}
     />
     <JobsStack.Screen
@@ -283,7 +275,7 @@ const JobsStackScreen = () => (
         ),
       }}
     />
-    <Tabs.Screen
+    <JobsStack.Screen
       name="Video"
       component={Video}
       options={{

@@ -13,22 +13,24 @@ export const updateApplication = ({enquiryObj}) => {
     contactPhone,
   } = enquiryObj;
 
+  const obj = {
+    [global.UID]: {
+      job_id: job_id,
+      applicant_id: global.UID,
+      appliedDate: appliedDate,
+      status: status,
+      message: message,
+      name: name,
+      messageType: messageType,
+      recording: recording,
+      contactPhone: contactPhone,
+    },
+  };
+
   firestore()
     .collection('applications')
     .doc(job_id)
-    .set(
-      {
-        applicant_id: global.UID,
-        appliedDate: appliedDate,
-        status: status,
-        message: message,
-        name: name,
-        messageType: messageType,
-        recording: recording,
-        contactPhone: contactPhone,
-      },
-      {merge: true},
-    )
+    .set(obj, {merge: true})
     .then(() => {
       feedback(name, '');
     })

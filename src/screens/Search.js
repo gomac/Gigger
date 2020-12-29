@@ -38,7 +38,7 @@ const Search = (props) => {
         ? props.route.params.selectedJobTypes
         : [];
     const fetchData = async () => {
-      const arr = await GetJobsInLocationOnce(region);
+      const arr = await GetJobsInLocationOnce(region, loc);
 
       setData(arr);
       setIsLoading(false);
@@ -91,7 +91,7 @@ const Search = (props) => {
 
   const renderHeader = () => {
     if (global.appType === 'boss' && typeof data !== 'undefined') {
-      const label1 = data.length + ` Jobs:`;
+      const label1 = data.length + ' Jobs:';
       const label2 =
         'press a Job to go to Requirements for the Job or press Plus to Add a Job';
 
@@ -105,7 +105,7 @@ const Search = (props) => {
               </Text>
             </Text>
           </Text>
-          <Text>{label2}</Text>
+          <Text style={styles.headingText}>{label2}</Text>
         </View>
       );
     }
@@ -144,20 +144,19 @@ const Search = (props) => {
     return (
       <View>
         <Text style={styles.baseText}>
-          <B>{item.terms?.workTerms}</B>
-        </Text>
-        <Text style={styles.baseText}>
+          <B>{item.terms?.workTerms} - </B>
+
+          {/*         <Text style={styles.baseText}>
           <B>{item.location}</B>
-        </Text>
-        {item.terms?.maxPayValue > 0 && (
-          <Text style={styles.baseText}>
+        </Text> */}
+          {item.terms?.maxPayValue > 0 && (
             <B>
               {CURRENCY_SYMBOL}
               {item.terms?.minPayValue} - {CURRENCY_SYMBOL}
               {item.terms?.maxPayValue} {item.terms?.payFreq}
             </B>
-          </Text>
-        )}
+          )}
+        </Text>
         {/**<Text style={styles.item}><B>Start date:</B> {this.FormatUTCDateTime(Date.parse(item.statusDetails.jobStartDate))}</Text>*/}
         <Text style={styles.smallText}>{diff}d ago</Text>
         {/**<Text style={styles.item}><B>End date: </B>{this.FormatUTCDateTime(Date.parse(item.statusDetails.jobEndDate))}</Text>*/}
@@ -197,12 +196,19 @@ const Search = (props) => {
               renderItem={({item, index}) => (
                 <ListItem
                   key={index}
-                  leftElement={() => renderRowButton(item)}
+                  rightElement={() => renderRowButton(item)}
                   onPress={() => {
                     enquire(item);
                   }}>
                   <ListItem.Content>
-                    <ListItem.Title>{`${item.name.toUpperCase()}`}</ListItem.Title>
+                    <ListItem.Title>
+                      <View>
+                        <Text
+                          style={
+                            styles.item
+                          }>{`${item.name.toUpperCase()}`}</Text>
+                      </View>
+                    </ListItem.Title>
                     <ListItem.Subtitle>{GetSubtitle(item)}</ListItem.Subtitle>
                   </ListItem.Content>
                 </ListItem>
@@ -259,6 +265,11 @@ const styles = StyleSheet.create({
   baseText: {
     fontFamily: 'Cochin',
     fontWeight: 'normal',
+  },
+  headingText: {
+    fontFamily: 'Cochin',
+    fontWeight: 'normal',
+    color: 'white',
   },
   sectionHeader: {
     paddingTop: 2,

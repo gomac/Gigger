@@ -191,8 +191,8 @@ export default class Enquiry extends Component {
       //enquiryObj.endDate = endDate.setDate(today.getDate() + this.state.allowedViewDays)
       //enquiryObj.noTimesToView = this.state.noTimesToView
       enquiryObj.name = global.displayName;
-      enquiryObj.messageType = '';
-      enquiryObj.recording = '';
+      enquiryObj.messageType = 'text';
+      enquiryObj.recording = false;
       enquiryObj.contactPhone = this.state.phoneValue;
 
       updateApplication({enquiryObj});
