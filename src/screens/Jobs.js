@@ -110,7 +110,13 @@ const Jobs = (props) => {
       <View>
         <Button
           text={'Applicants'}
-          onPress={() => console.log('row button')}
+          onPress={(job) => {
+            props.navigation.navigate('TileList', {
+              applicantEnqArr: applications[item.job_id],
+              job: item,
+              refreshRqd: this.refreshRqd,
+            });
+          }}
           loading={loading}
           type="small"
         />

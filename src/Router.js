@@ -15,6 +15,8 @@ import FirebaseLogin from './FirebaseLogin';
 import LogOut from './FirebaseLogin/screens/LogOut';
 import Video from './screens/Video';
 import Enquiry from './screens/Enquiry';
+import TileList from './screens/TileList';
+import Request from './screens/Requests';
 import {AuthProvider, useAuth} from './Utils/AuthContext';
 import {JobProvider} from './Utils/JobContext';
 import {testProperties} from './Utils/TestProperties';
@@ -261,6 +263,44 @@ const JobsStackScreen = () => (
       component={Enquiry}
       options={{
         tabBarLabel: 'Enquiries',
+        headerTitleStyle: {
+          width: '90%',
+          textAlign: 'right',
+        },
+        headerStyle: {
+          backgroundColor: '#5692CE',
+        },
+        headerTintColor: '#fff',
+        //tabBarVisible: false,
+        tabBarIcon: ({tintColor}) => (
+          <Icon name="list" size={35} color={tintColor} />
+        ),
+      }}
+    />
+    <JobsStack.Screen
+      name="TileList"
+      component={TileList}
+      options={{
+        tabBarLabel: 'Applicants',
+        headerTitleStyle: {
+          width: '90%',
+          textAlign: 'right',
+        },
+        headerStyle: {
+          backgroundColor: '#5692CE',
+        },
+        headerTintColor: '#fff',
+        //tabBarVisible: false,
+        tabBarIcon: ({tintColor}) => (
+          <Icon name="list" size={35} color={tintColor} />
+        ),
+      }}
+    />
+    <JobsStack.Screen
+      name="Request"
+      component={Request}
+      options={{
+        tabBarLabel: 'Request',
         headerTitleStyle: {
           width: '90%',
           textAlign: 'right',

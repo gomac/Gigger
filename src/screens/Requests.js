@@ -10,12 +10,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {material} from 'react-native-typography';
-import {Button, ListItem} from 'react-native-elements';
-import {firebaseDB} from '../config/FirebaseConfig';
+import {Button} from 'react-native-elements';
 import Snackbar from 'react-native-snackbar';
 import RadioForm from 'react-native-simple-radio-button';
 import Video from 'react-native-video-controls';
+import {updateApplicationDecision} from '../model';
 
 const width = Dimensions.get('window').width;
 
@@ -23,17 +22,10 @@ class Request extends Component {
   constructor(props) {
     super(props);
     this.props = props;
-    this.jobsFromFB = firebaseDB.ref('/jobs');
-    this.usersFromFB = firebaseDB.ref('/users');
-
     this.value = 0;
 
-    this.applicantEnqObjKey = this.props.route.params.applicantEnqObj[0];
-    this.applicantEnqObj = {
-      ...this.props.route.params.applicantEnqObj[1],
-    };
+    this.applicantEnqObj = this.props.route.params.applicantEnqObj;
 
-    console.log('this.applicantEnqObjKey ', this.applicantEnqObjKey);
     console.log('this.applicantEnqObj ', this.applicantEnqObj);
     this.state = {
       decisionMsg: '',
@@ -59,7 +51,7 @@ class Request extends Component {
     };
 
     //tiring conversion of literal to index
-    const initialObj = this.state.acceptReject.filter(obj => {
+    const initialObj = this.state.acceptReject.filter((obj) => {
       return obj.dbVal === this.applicantEnqObj.status;
     })[0];
     this.initialStatus = initialObj.value;
@@ -80,121 +72,23 @@ class Request extends Component {
     navigation.goBack();
   };
 
-  findByProp = (o, prop, val, retprop) => {
-    //Early return
-    if (o == null) return false;
-    if (o[prop] === val) {
-      return retprop ? o[retprop] : o;
-    }
-    var result, p;
-    for (p in o) {
-      if (o.hasOwnProperty(p) && typeof o[p] === 'object') {
-        result = this.findByProp(o[p], prop, val);
-        if (result) {
-          return retprop ? result[retprop] : result;
-        }
-      }
-    }
-    return retprop ? result[retprop] : result;
-  };
-
-  linkApplicantToJob = async () => {
-    const {job} = this.props.route.params;
-    // NOTE the this.applicantEnqObj[0] is the requesting user UID, applicantReq[1] is and object
-    //const job = {...job}
-
-    // 1  add applicant to job
-    // 2  add job id to USER who is now a APPLICANT
-
-    // TODO cant make boss a applicant
-    // if UID === global.UID
-    // TODO leave this out for testing
-
-    // I dont think we need this
-    // 1 ADD APPLICANT TO JOB
-    // check if already exists
-    // look through list of applicants nodes in jobs array
-    /*if (typeof job !== "undefined") {
-      console.log("findByProp return value is ", this.findByProp(job.applicants, "applicant_id", UID));
-      if (this.findByProp(job.applicants, "applicant_id", UID)) {
-        alert("Applicant is already accepted for consideration.");
-        return;
-      }
-    }*/
-
-    // I dont think we need this
-    // add APPLICANT node to JOB
-    /*console.log("this.applicantEnqObj.name ", this.applicantEnqObj.name)
-    this.jobsFromFB.child(job._id).child('applicants').child(UID).update(
-      { name: this.applicantEnqObj.name,
-        _id: UID,
-        decisionMsg: this.state.decisionMsg
-      },
-      function(error) {
-      if (error) {
-        //console.log("Job applicant details could not be saved." + error);
-      } else {
-       // console.log("Job applicant details saved successfully.");
-      }
-    });*/
-
-    // 2 ADD JOB TO USER
-    /* We need this because when the user logs in we want a quck list
-        of their jobs. We don't want to have to look through all jobs
-        to see if applicant is enrolled */
-    let node = 'jobs/' + job._id;
-    this.usersFromFB = firebaseDB.ref('/users');
-    this.usersFromFB
-      .child(this.applicantEnqObjKey)
-      .update({[node]: 'current'}, error => {
-        if (error) {
-          //console.log("Data could not be saved." + error);
-        } else {
-          // console.log("Job saved successfully.");
-        }
-      });
-  };
-
   actionRequest = () => {
     // val = 0 - return, val = 1 - g, val = 2 - reject
     const value = this.value;
-    const obj = {};
-    obj.changedDate = Date.now();
-    obj.name = this.applicantEnqObj.name;
-    obj.message = this.applicantEnqObj.message;
-    obj.decisionMsg = this.state.decisionMsg;
+    const enquiryObj = {};
+    enquiryObj.job_id = this.applicantEnqObj.job_id;
+    enquiryObj.decisionMsg = this.state.decisionMsg;
 
-    if (value == 0) {
+    if (value === 0) {
       return;
-    } else if (value == 1) {
-      // accept
-      // 1 link applicant to job
-      this.linkApplicantToJob();
-      // 2 change status
-      obj.status = 'accepted';
+    } else if (value === 1) {
+      enquiryObj.status = 'accepted';
     } else if (value == 2) {
-      // reject:
-      obj.status = 'rejected';
+      enquiryObj.status = 'rejected';
     }
 
-    const {job} = this.props.route.params;
+    updateApplicationDecision({enquiryObj});
 
-    const refPending = firebaseDB.ref('/pending');
-    let node = '/' + this.applicantEnqObjKey + '/';
-
-    refPending.child(job._id).update({[node]: obj}, error => {
-      if (error) {
-        Snackbar.show({
-          title: 'Enrolment action could not be saved' + error,
-          duration: Snackbar.LENGTH_LONG,
-        });
-      } else {
-        Snackbar.show({
-          title: 'Enrolment request actioned',
-          duration: Snackbar.LENGTH_LONG,
-        });
-      }
-    });
     this.didUpdate();
   };
 
@@ -212,12 +106,12 @@ class Request extends Component {
     });
   };
 
-  onProgress = data => {
+  onProgress = (data) => {
     this.currentTime = data.currentTime;
     //console.log('current time: ', this.state.currentTime);
   };
 
-  onVideoError = err => {
+  onVideoError = (err) => {
     //("ERROR FROM VIDEO ", err)
   };
 
@@ -231,7 +125,7 @@ class Request extends Component {
         </View>
         <View style={{width, height: this.state.videoHeight}}>
           <Video
-            ref={ref => {
+            ref={(ref) => {
               this.recPlayer = ref;
             }}
             paused={this.state.paused}
@@ -297,15 +191,9 @@ class Request extends Component {
     if (!this.state.decisionMsg) {
       let placeholder;
       if (this.value == 2) {
-        placeholder = `Hi ${
-          this.applicantEnqObj.name
-        }. Thank you for your application. Unfortunaly, we can't offer you a position at this stage. Best wishes in your job search, ${
-          global.displayName
-        }`;
+        placeholder = `Hi ${this.applicantEnqObj.name}. Thank you for your application. Unfortunaly, we can't offer you a position at this stage. Best wishes in your job search, ${global.displayName}`;
       } else if (this.value == 1) {
-        placeholder = `Hi ${
-          this.applicantEnqObj.name
-        }. I'm interested in your application. The process from here is as follows:
+        placeholder = `Hi ${this.applicantEnqObj.name}. I'm interested in your application. The process from here is as follows:
 
 
 
@@ -344,7 +232,7 @@ class Request extends Component {
                 onPress={() => {
                   Linking.openURL(
                     'tel:' + this.applicantEnqObj.contactPhone,
-                  ).catch(err => console.error('An error occurred', err));
+                  ).catch((err) => console.error('An error occurred', err));
                 }}
                 style={styles.phoneText}>
                 {this.applicantEnqObj.name}: {this.applicantEnqObj.contactPhone}
@@ -357,7 +245,7 @@ class Request extends Component {
               formHorizontal={false}
               labelHorizontal={false}
               animation={true}
-              onPress={value => {
+              onPress={(value) => {
                 this.value = value;
                 this.setPlaceHolderMsg();
               }}
@@ -369,7 +257,7 @@ class Request extends Component {
               maxLength={2000}
               numberOfLines={3}
               value={this.state.enquirerMsg}
-              onChangeText={decisionMsg => this.setState({decisionMsg})}
+              onChangeText={(decisionMsg) => this.setState({decisionMsg})}
               clearButtonMode="always"
               style={{
                 alignSelf: 'center',
@@ -389,7 +277,7 @@ class Request extends Component {
               maxLength={2000}
               numberOfLines={3}
               value={this.state.decisionMsg}
-              onChangeText={decisionMsg => this.setState({decisionMsg})}
+              onChangeText={(decisionMsg) => this.setState({decisionMsg})}
               clearButtonMode="always"
               style={{
                 alignSelf: 'center',

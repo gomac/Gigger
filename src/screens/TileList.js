@@ -18,11 +18,11 @@ class TileList extends Component {
   constructor(props) {
     super(props);
     this.props = props;
-    this.applicantEnqArr = [...this.props.route.params.applicantEnqArr];
+    this.applicantEnqArr = this.props.route.params.applicantEnqArr;
     console.log('this.applicantEnqArr ', this.applicantEnqArr);
   }
 
-  onLearnMore = index => {
+  onLearnMore = (index) => {
     const {job} = this.props.route.params;
     this.props.navigation.navigate('Request', {
       applicantEnqObj: this.applicantEnqArr[index],
@@ -31,7 +31,7 @@ class TileList extends Component {
   };
 
   //spanish name
-  parseName = input => {
+  parseName = (input) => {
     var fullName = input || '';
     var result = {};
 
@@ -102,7 +102,7 @@ class TileList extends Component {
           </View>
           <Text
             onPress={() => {
-              Linking.openURL('tel:' + applicant.contactPhone).catch(err =>
+              Linking.openURL('tel:' + applicant.contactPhone).catch((err) =>
                 console.error('An error occurred', err),
               );
             }}
@@ -120,7 +120,7 @@ class TileList extends Component {
     return {size, margin};
   };
 
-  getColor = username => {
+  getColor = (username) => {
     let sumChars = 0;
     for (let i = 0; i < username.length; i++) {
       sumChars += username.charCodeAt(i);
@@ -140,7 +140,7 @@ class TileList extends Component {
       '#008080',
       '#e6beff',
       '#9a6324',
-      '#fffac8',
+      '#8687c8',
       '#800000',
       '#fe00f6',
       '#5d4eff',
@@ -160,7 +160,7 @@ class TileList extends Component {
       <ScrollView>
         <View style={styles.container}>
           {this.applicantEnqArr.map((applicantArr, index) =>
-            this.Item({...tileDimensions, applicant: applicantArr[1]}, index),
+            this.Item({...tileDimensions, applicant: applicantArr}, index),
           )}
         </View>
       </ScrollView>

@@ -75,10 +75,7 @@ const Login = (props) => {
       colors={['#5692CE', '#5E82E3']}
       style={{flex: 1}}>
       <KeyboardAwareScrollView
-        resetScrollToCoords={{x: 0, y: 0}}
         contentContainerStyle={styles.container}
-        scrollEnabled={false}
-        enableOnAndroid={true}
         {...testProperties('Login-screen')}>
         {global.appType === 'user' && (
           <TouchableOpacity

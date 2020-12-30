@@ -18,7 +18,10 @@ export {
   GetJobsByUidOnce,
 } from './JobModelQueries';
 
-export {updateApplication} from './ApplicationModelUpdates';
+export {
+  updateApplication,
+  updateApplicationDecision,
+} from './ApplicationModelUpdates';
 
 export {
   GetApplicationsByJobId,

@@ -1,4 +1,5 @@
 import firestore from '@react-native-firebase/firestore';
+import {merge} from 'lodash';
 import {feedback} from '../components/Feedback';
 
 export const updateApplication = ({enquiryObj}) => {
@@ -36,5 +37,30 @@ export const updateApplication = ({enquiryObj}) => {
     })
     .catch((error) => {
       feedback(name, error);
+    });
+};
+
+export const updateApplicationDecision = ({enquiryObj}) => {
+  const {job_id, decision, decisionMsg} = enquiryObj;
+
+  firestore()
+    .collection('applications')
+    .doc(job_id)
+    .set(
+      {
+        dchDO5TiWeeyhACosTW7wMNAybl2: {
+          changedDate: Date.now(),
+          decision: decision,
+          decisionMsg: decisionMsg,
+        },
+      },
+      {merge: true},
+    )
+
+    .then(() => {
+      feedback(job_id, '');
+    })
+    .catch((error) => {
+      feedback(job_id, error);
     });
 };

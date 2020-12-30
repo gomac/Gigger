@@ -211,7 +211,7 @@ const Home = (props) => {
                   onPress={() => {
                     !region['latitude']
                       ? renderLoading
-                      : props.navigation.navigate('Search', {
+                      : props.navigation.navigate('Jobs', {
                           mode: 'search',
                           region: region,
                           selectedJobTypes: selectedJobTypes,
