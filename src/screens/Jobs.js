@@ -30,6 +30,7 @@ const RED = (props) => <Text style={{color: 'red'}}>{props.children}</Text>;
 const Jobs = (props) => {
   const {setNewJob, loadJobObj} = useJob();
   const [applications, setApplications] = useState([]);
+  const [aplnsCntsArr, setAplnsCntsArr] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [jobs, setjobs] = useState([]);
 
@@ -53,14 +54,18 @@ const Jobs = (props) => {
     return {...acc, [appln.status]: (acc[appln.status] || 0) + 1};
   };
 
+  function getByValue(arr, job_id) {
+    for (var i = 0, iLen = arr.length; i < iLen; i++) {
+      if (arr[i].job_id === job_id) return arr[i];
+    }
+  }
+
   useEffect(() => {
     if (mode === 'bossJobs') {
       if (value) {
         //use job_id from jobs to get applications
         GetApplicationsByJobId(value).then((applnsArr) => {
           setApplications(applnsArr);
-
-          console.log('applnsArr ', applnsArr);
 
           const countsArr = Object.entries(applnsArr).map((applns) =>
             applns[1].reduce(func, {
@@ -70,7 +75,8 @@ const Jobs = (props) => {
               rejected: 0,
             }),
           );
-          console.log('countsArr ', countsArr);
+
+          setAplnsCntsArr(countsArr);
         });
         setjobs(value);
       }
@@ -99,6 +105,7 @@ const Jobs = (props) => {
   }, [jobs, value, mode, props.route?.param]);
 
   function renderRowButton(item) {
+    const statusesObj = getByValue(aplnsCntsArr, item.job_id);
     return (
       <View>
         <Button
@@ -107,7 +114,11 @@ const Jobs = (props) => {
           loading={loading}
           type="small"
         />
-        <StatusDisplay pendingNum="1" rejectedNum="1" acceptedNum="1" />
+        <StatusDisplay
+          pendingNum={statusesObj?.pending}
+          rejectedNum={statusesObj?.rejected}
+          acceptedNum={statusesObj?.accepted}
+        />
       </View>
     );
   }
@@ -222,7 +233,7 @@ const Jobs = (props) => {
           renderItem={({item, index}) => (
             <ListItem
               key={index}
-              rightElement={() => renderRowButton()}
+              rightElement={() => renderRowButton(item, index)}
               onPress={() => {
                 goToJobController(item);
               }}>
