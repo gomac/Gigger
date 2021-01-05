@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -40,28 +40,18 @@ const Home = (props) => {
   if (global.appType === 'boss') {
     //[value, loading, error] = GetJobsByUid(global.UID);
   } else {
-    [refData, loading, error] = GetRefData();
+    //[refData, loading, error] = GetRefData();
   }
-  //else {
-  // if this is a logged in user
-  // get the locally save previous search
-  //     GetJobsInLocation('abc').then((arr) => {
-  //console.log('retDocsArr ', arr);
-  //setValue([...arr]);
-  //}); */
-  //}
 
-  console.log('errors ', error);
+  //console.log('errors ', error);
 
   let outArr;
-  if (!refData) {
+  /*if (!refData) {
     // TODO user friendly message
     console.log('ref data not found');
   } else {
     outArr = refDataToMultiSLFormat(refData);
-  }
-
-  //console.log('value ', value);
+  } */
 
   const getCoordsFromName = (loc) => {
     updateState({
@@ -211,7 +201,7 @@ const Home = (props) => {
                   onPress={() => {
                     !region['latitude']
                       ? renderLoading
-                      : props.navigation.navigate('Jobs', {
+                      : props.navigation.navigate('Search', {
                           mode: 'search',
                           region: region,
                           selectedJobTypes: selectedJobTypes,
@@ -223,7 +213,7 @@ const Home = (props) => {
                 <TouchableOpacity
                   style={styles.button}
                   onPress={() => {
-                    props.navigation.navigate('Jobs', {mode: 'applications'});
+                    props.navigation.navigate('Jobs', {mode: 'applicant'});
                   }}>
                   <Text style={styles.text}>My Enquiries</Text>
                 </TouchableOpacity>

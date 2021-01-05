@@ -16,11 +16,13 @@ import {ListItem} from 'react-native-elements';
 import {Button} from '../components/Button';
 import {StatusDisplay} from '../components/StatusDisplay';
 import {testProperties} from '../Utils/TestProperties';
-import {flattenObject} from '../Utils/fp_helpers';
+import {flattenObject, arrayUnique} from '../Utils/helpers';
 import {
   GetApplicationsByJobId,
-  GetApplicationsByUid,
+  GetUserApplicationsFronJobArr,
   GetJobsByUid,
+  GetUserJobs,
+  GetJobsByJob_IdArr,
   GetJobsInLocationOnce,
 } from '../model';
 
@@ -48,6 +50,7 @@ const Jobs = (props) => {
   // is that is does a useEffect inside and sets up a listener
   if (mode === 'bossJobs') {
     [value, loading, error] = GetJobsByUid(global.UID);
+  } else if (mode === 'applicant') {
   }
 
   const func = (acc, appln) => {
@@ -80,9 +83,24 @@ const Jobs = (props) => {
         });
         setjobs(value);
       }
-    } else if (mode === 'applications') {
-      GetApplicationsByUid(global.UID).then((arr) => {
-        setApplications(arr);
+    } else if (mode === 'applicant') {
+      let outArr = [];
+      GetUserJobs(global.UID).then((arr) => {
+        GetJobsByJob_IdArr(arr).then((jobDtlsArr) => {
+          GetUserApplicationsFronJobArr(arr).then((arr2) => {
+            // console.log('jobDtlsArr ', jobDtlsArr);
+            // console.log('applications arr ', arr2);
+            //merge elements
+            let i = 0;
+            arr2.map((obj) => {
+              var merged = Object.assign({}, jobDtlsArr[i], obj);
+              outArr.push(merged);
+              i++;
+            });
+            setjobs(outArr);
+            //console.log('outArr ', outArr);
+          });
+        });
       });
     } else if (mode === 'search') {
       setIsLoading(true);
@@ -102,24 +120,39 @@ const Jobs = (props) => {
     } else {
       console.log('mode not found');
     }
-  }, [jobs, value, mode, props.route?.param]);
+  }, []);
 
   function renderRowButton(item) {
     const statusesObj = getByValue(aplnsCntsArr, item.job_id);
     return (
       <View>
-        <Button
-          text={'Applicants'}
-          onPress={(job) => {
-            props.navigation.navigate('TileList', {
-              applicantEnqArr: applications[item.job_id],
-              job: item,
-              refreshRqd: this.refreshRqd,
-            });
-          }}
-          loading={loading}
-          type="small"
-        />
+        {global.appType === 'boss' ? (
+          <Button
+            text={'Applicants'}
+            accessibilityLabel="Applicants"
+            onPress={(job) => {
+              props.navigation.navigate('TileList', {
+                applicantEnqArr: applications[item.job_id],
+                job: item,
+                refreshRqd: this.refreshRqd,
+              });
+            }}
+            loading={loading}
+            type="small"
+          />
+        ) : (
+          <Button
+            text={'Enquiries'}
+            accessibilityLabel="My Enquiry"
+            onPress={(job) => {
+              props.navigation.navigate('Enquiry', {
+                jobObj: item,
+              });
+            }}
+            loading={loading}
+            type="small"
+          />
+        )}
         <StatusDisplay
           pendingNum={statusesObj?.pending}
           rejectedNum={statusesObj?.rejected}
@@ -131,7 +164,7 @@ const Jobs = (props) => {
 
   const goToJobController = (item) => {
     var selArr = ['selectedJobTypesArr'];
-    console.log(flattenObject(item, selArr));
+    //console.log(flattenObject(item, selArr));
     loadJobObj(flattenObject(item));
     props.navigation.navigate('JobController');
   };
@@ -241,7 +274,11 @@ const Jobs = (props) => {
               key={index}
               rightElement={() => renderRowButton(item, index)}
               onPress={() => {
-                goToJobController(item);
+                global.appType === 'boss'
+                  ? goToJobController(item)
+                  : props.navigation.navigate('Enquiry', {
+                      jobObj: item,
+                    });
               }}>
               <ListItem.Content>
                 <ListItem.Title>{`${item.name.toUpperCase()}`}</ListItem.Title>

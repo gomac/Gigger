@@ -1,4 +1,3 @@
-import React, {useState} from 'react';
 import {
   useCollection,
   useCollectionOnce,
@@ -6,7 +5,6 @@ import {
   useCollectionDataOnce,
 } from 'react-firebase-hooks/firestore';
 import firestore from '@react-native-firebase/firestore';
-import * as geofirestore from 'geofirestore';
 
 // QUERY BY (BOSS) UID
 /* const GetJobsByUid = () => {
@@ -21,17 +19,14 @@ export const GetApplicationsByJobId = (jobArr) => {
       jobIdArr.push(job.job_id);
     });
 
-    let dataArr = [];
-    // 'By default, a query retrieves all documents that satisfy
-    // the query in ascending order by document ID'
-    // 'You cannot order your query by any field included in an equality (=) or in clause'
     firestore()
       .collection('applications')
       .where('__name__', 'in', jobIdArr)
       .get()
       .then((querySnapshot) => {
         var result = querySnapshot.docs.reduce(function (acc, val) {
-          //var k = val.data().job_id; // unique key
+          // for each job build job object of applications
+          // each job has an array of application objects with the job as key
           var k = val.id; // use the job_key as the unique key
           if (acc[k] || (acc[k] = [])) {
             Object.values(val.data()).map((el) => acc[k].push(el));
@@ -47,35 +42,30 @@ export const GetApplicationsByJobId = (jobArr) => {
   });
 };
 
-export const GetApplicationsByUid = async (uid) => {
-  let query = firestore()
-    .collection('applications')
-    .where('applicant_id', '===', uid);
-  const [value, loading, error] = useCollectionDataOnce(query, {
-    snapshotListenOptions: {includeMetadataChanges: true},
+export const GetUserApplicationsFronJobArr = async (job_idArr) => {
+  return new Promise((resolve, reject) => {
+    // return an array of applns, one appln for each job for this UID
+    let outerArr = [];
+    firestore()
+      .collection('applications')
+      .where('__name__', 'in', job_idArr)
+      .get()
+      .then((snapshot) => {
+        // the snapshot has the found set of applicationms by job
+        // but we need to filter for this user
+        snapshot.docs.map((doc) => {
+          const appOut = Object.entries(doc.data()).filter((appln) => {
+            return appln[0] === global.UID;
+          });
+          outerArr.push(appOut[0][1]);
+        });
+        resolve(outerArr);
+      })
+      .catch((e) => {
+        console.log('error ', e);
+        reject('error ', e);
+      });
   });
-
-  // pick job_ids into an array
-  let arr = [];
-  value.map((job) => {
-    arr.push(job.job_id);
-  });
-
-  // get the job details for each one
-  let outerArr = [];
-  const snapshot = await firestore()
-    .collection('jobs')
-    .where('job_id', 'in', arr)
-    .orderBy('name')
-    .get();
-
-  if (snapshot) {
-    snapshot.docs.map((doc) => {
-      outerArr.push(doc.data());
-    });
-  }
-
-  return outerArr;
 };
 
 /*

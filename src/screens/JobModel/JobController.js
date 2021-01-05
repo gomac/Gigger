@@ -41,15 +41,14 @@ const JobController = (props) => {
               width: size,
               height: size,
               marginHorizontal: margin,
-              // backgroundColor: getColor(screen.name),
+              backgroundColor: getColor(screen),
             },
           ]}>
-          <View style={styles.writingTile}></View>
-          <View style={styles.messageBubble}>
-            <View style={styles.talkBubbleTriangle} />
-            <Text style={styles.messageBubbleTextLeft}></Text>
+          <View>
+            <View style={styles.messageBubble}>
+              <Text style={styles.messageBubbleTextLeft}>{screen}</Text>
+            </View>
           </View>
-          <Text></Text>
         </View>
       </TouchableOpacity>
     );
@@ -81,11 +80,11 @@ const JobController = (props) => {
       '#008080',
       '#e6beff',
       '#9a6324',
-      '#fffac8',
+      '#46f8cd',
       '#800000',
       '#fe00f6',
       '#5d4eff',
-      '#ffd8b1',
+      '#3f88b1',
       '#52a4ff',
       '#808080',
       '#ffffff',
@@ -132,20 +131,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     alignSelf: 'center',
   },
-  phoneText: {
-    fontSize: 13,
-    color: 'blue',
-    fontWeight: 'bold',
-    alignSelf: 'center',
-    marginBottom: 10,
-    marginTop: 15,
-  },
   messageBubble: {
     flex: 0.5,
     width: '80%',
     borderRadius: 5,
     marginRight: 10,
     marginLeft: 20,
+    marginBottom: 20,
     paddingHorizontal: 10,
     paddingVertical: 5,
     flexDirection: 'row',
@@ -153,12 +145,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#d5d8d4',
   },
   messageBubbleTextLeft: {
-    fontSize: 14,
+    fontSize: 20,
     color: 'gray',
     fontWeight: 'bold',
-  },
-  writingTile: {
-    flex: 1,
   },
   talkBubbleTriangle: {
     position: 'absolute',
@@ -173,12 +162,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 10,
     borderBottomColor: 'transparent',
   },
-  iconAccept: {
+  iconComplete: {
     position: 'absolute',
     right: 5,
     top: 5,
   },
-  iconReject: {
+  iconIncomplete: {
     position: 'absolute',
     left: 5,
     top: 5,

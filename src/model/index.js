@@ -8,6 +8,7 @@ export {
 } from './JobModelUpdates';
 
 export {
+  GetUserJobs,
   GetJobsByUid,
   GetJobsByJob_Id,
   GetJobsByCriteria,
@@ -16,6 +17,7 @@ export {
   GetRefData,
   GetJobsByCriteriaLocation,
   GetJobsByUidOnce,
+  GetJobsByJob_IdArr,
 } from './JobModelQueries';
 
 export {
@@ -25,5 +27,5 @@ export {
 
 export {
   GetApplicationsByJobId,
-  GetApplicationsByUid,
+  GetUserApplicationsFronJobArr,
 } from './ApplicationModelQueries.js';

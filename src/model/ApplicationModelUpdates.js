@@ -33,7 +33,16 @@ export const updateApplication = ({enquiryObj}) => {
     .doc(job_id)
     .set(obj, {merge: true})
     .then(() => {
-      feedback(name, '');
+      firestore()
+        .collection('users')
+        .doc(global.UID)
+        .update({jobs: firestore.FieldValue.arrayUnion(job_id)})
+        .then(() => {
+          feedback(name, '');
+        })
+        .catch((error) => {
+          feedback(name, error);
+        });
     })
     .catch((error) => {
       feedback(name, error);

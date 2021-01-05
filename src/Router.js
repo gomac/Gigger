@@ -427,7 +427,7 @@ const DrawerScreen = () => (
 const RootStackScreen = () => {
   // currentUser is provided from the listener in the authProvider
   const {currentUser, loading, error} = useAuth();
-  console.log('error ', error);
+  //console.log('error ', error);
   // if no user go to login, don't show error
   if (loading) {
     return <Splash />;
@@ -482,7 +482,7 @@ export default () => {
   }, [isIntroDone]);
 
   store.get('introDone').then((introDoneArr) => {
-    console.log(introDoneArr);
+    //console.log(introDoneArr);
     if (introDoneArr) {
       setIsIntroDone(true);
     }

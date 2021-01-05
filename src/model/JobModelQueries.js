@@ -34,8 +34,44 @@ export const GetJobsByUidOnce = (uid) => {
   });
 };
 
-export const GetJobsByJob_Id = (job_id) => {
-  //return firestore().collection('jobs').where('job_id', '==', job_id);
+export const GetUserJobs = (UID) => {
+  return new Promise((resolve, reject) => {
+    firestore()
+      .collection('users')
+      .doc(global.UID)
+      .get()
+      .then((querySnapshot) => {
+        // pick job_ids into an array
+        let arr = [];
+        if (!querySnapshot) {
+          resolve([]);
+        } else {
+          querySnapshot.data().jobs.map((job_id) => {
+            arr.push(job_id);
+          });
+          resolve(arr);
+        }
+      });
+  });
+};
+
+export const GetJobsByJob_IdArr = (job_idArr) => {
+  return new Promise((resolve, reject) => {
+    let outArr = [];
+    if (job_idArr.length > 0) {
+      firestore()
+        .collection('jobs')
+        .where('job_id', 'in', job_idArr)
+        .orderBy('name')
+        .get()
+        .then((value) => {
+          value.docs.map((doc) => {
+            outArr.push(doc.data());
+          });
+          resolve(outArr);
+        });
+    }
+  });
 };
 
 export const GetJobsInLocationOnce = async (loc) => {

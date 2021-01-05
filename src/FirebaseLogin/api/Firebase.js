@@ -43,6 +43,7 @@ export const createUserRecord = (
   name,
   company,
   email,
+  phone,
   password,
 ) => {
   ////
@@ -60,6 +61,7 @@ export const createUserRecord = (
     newUser.company = company;
   }
   newUser.email = newEmail;
+  newUser.phone = phone;
   newUser.uploadTotal = 0;
   newUser.status = 'registered';
   ////

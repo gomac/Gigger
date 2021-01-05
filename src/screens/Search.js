@@ -14,6 +14,12 @@ import {testProperties} from '../../src/Utils/TestProperties';
 import {GetJobsInLocationOnce} from '../model';
 import {dataToSectionListFormat} from '../Utils/helpers';
 import {StatusDisplay} from '../components/StatusDisplay';
+import {
+  GetUserApplicationsFronJobArr,
+  GetUserJobs,
+  GetJobsByJob_IdArr,
+} from '../model';
+import {merge} from 'lodash';
 
 const B = (props) => <Text style={{fontWeight: 'bold'}}>{props.children}</Text>;
 const RED = (props) => <Text style={{color: 'red'}}>{props.children}</Text>;
@@ -38,9 +44,37 @@ const Search = (props) => {
         ? props.route.params.selectedJobTypes
         : [];
     const fetchData = async () => {
-      const arr = await GetJobsInLocationOnce(region, loc);
+      const jobDtlsArr = await GetJobsInLocationOnce(region, loc);
 
-      setData(arr);
+      // now check if the user has already applied
+      if (global.appType === 'user') {
+        let outArr = [];
+        GetUserJobs(global.UID).then((arr) => {
+          GetJobsByJob_IdArr(arr).then((jobArr) => {
+            GetUserApplicationsFronJobArr(arr).then((arr2) => {
+              // console.log('jobDtlsArr ', jobDtlsArr);
+              // console.log('applications arr ', arr2);
+              //merge elements
+
+              arr2.map((job) => {
+                var idx = jobDtlsArr.findIndex(
+                  (obj) => obj.job_id === job.job_id,
+                );
+                if (idx !== -1) {
+                  // merge if found
+                  var merged = Object.assign({}, jobDtlsArr[idx], job);
+                  jobDtlsArr[idx] = merged;
+                }
+              });
+
+              setData(jobDtlsArr);
+              //console.log('outArr ', outArr);
+            });
+          });
+        });
+      }
+
+      //setData(jobDtlsArr);
       setIsLoading(false);
     };
 
@@ -84,7 +118,6 @@ const Search = (props) => {
           loading={isLoading}
           type="small"
         />
-        <StatusDisplay pendingNum="1" rejectedNum="1" acceptedNum="1" />
       </View>
     );
   }

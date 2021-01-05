@@ -21,11 +21,11 @@ import {CheckBox} from 'react-native-elements';
   global.appType == 'boss'
     ? require('../../../assets/companylogo_tboss.png')
     : require('../../../assets/companylogo_tjob.png') */
-const email = require('../../../assets/email.png');
-const password = require('../../../assets/password.png');
-const repeat = require('../../../assets/repeat.png');
-const person = require('../../../assets/person.png');
-const phone = require('../../../assets/phone.png');
+const emailImg = require('../../../assets/email.png');
+const passwordImg = require('../../../assets/password.png');
+const repeatImg = require('../../../assets/repeat.png');
+const personImg = require('../../../assets/person.png');
+const phoneImg = require('../../../assets/phone.png');
 
 export default class Register extends Component {
   constructor(props) {
@@ -66,7 +66,13 @@ export default class Register extends Component {
       if (global.appType === 'boss' && company === '') {
         //bail. compnay is mandatory
       } else {
-        this.createFireBasePlusUserAccount(name, company, email, password);
+        this.createFireBasePlusUserAccount(
+          name,
+          company,
+          email,
+          phone,
+          password,
+        );
       }
     } else if (repeat !== password) {
       this.setState({
@@ -109,8 +115,8 @@ export default class Register extends Component {
         } else {
         }
       } else {
-        this.props.change('login')();
-        this.setState({isCreatingAccount: false});
+        //this.props.change('login')();
+        //this.setState({isCreatingAccount: false});
       }
     });
   };
@@ -169,7 +175,7 @@ export default class Register extends Component {
             style={styles.input}
             focus={this.changeInputFocus}
             ref={(ref) => (this.name = ref)}
-            icon={person}
+            icon={personImg}
           />
           {global.appType === 'boss' && (
             <InputField
@@ -180,7 +186,7 @@ export default class Register extends Component {
               style={styles.input}
               focus={this.changeInputFocus}
               ref={(ref) => (this.company = ref)}
-              icon={person}
+              icon={personImg}
             />
           )}
           <InputField
@@ -191,7 +197,7 @@ export default class Register extends Component {
             style={styles.input}
             focus={this.changeInputFocus}
             ref={(ref) => (this.email = ref)}
-            icon={email}
+            icon={emailImg}
           />
           <InputField
             placeholder="Phone"
@@ -201,7 +207,7 @@ export default class Register extends Component {
             style={styles.input}
             focus={this.changeInputFocus}
             ref={(ref) => (this.phone = ref)}
-            icon={phone}
+            icon={phoneImg}
           />
           <InputField
             placeholder="Password"
@@ -211,7 +217,7 @@ export default class Register extends Component {
             focus={this.changeInputFocus}
             ref={(ref) => (this.password = ref)}
             secureTextEntry={true}
-            icon={password}
+            icon={passwordImg}
           />
           <InputField
             placeholder="Repeat Password"
@@ -223,7 +229,7 @@ export default class Register extends Component {
             blurOnSubmit={true}
             focus={this.changeInputFocus}
             ref={(ref) => (this.repeat = ref)}
-            icon={repeat}
+            icon={repeatImg}
           />
           <View style={{alignSelf: 'flex-start'}}>
             <CheckBox

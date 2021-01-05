@@ -20,7 +20,6 @@ const passwordImg = require('../../../assets/password.png');
 const Login = (props) => {
   const [isEmailError, setIsEmailError] = useState(false);
   const [isPasswordError, setIsPasswordError] = useState(false);
-
   const [isLogin, setIsLogin] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -63,7 +62,8 @@ const Login = (props) => {
           console.log('unknown error in login');
         }
       } else {
-        setIsLogin(false);
+        // this causes Can't perform a React state update on an unmounted component
+        //setIsLogin(false);
       }
     });
   };

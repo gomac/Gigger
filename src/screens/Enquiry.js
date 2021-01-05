@@ -78,12 +78,12 @@ export default class Enquiry extends Component {
     this.alreadyApplied = false;
     //only interested in occ one
     this.jobObj = this.props.route.params.jobObj;
-    //this.myEnqObj = Object.values(this.props.route.params.myEnqObj)[0];
+    //this.jobObj = Object.values(this.props.route.params.jobObj)[0];
 
-    if (typeof this.myEnqObj !== 'undefined') {
-      //if (this.myEnqObj.status==="accepted" ||this.myEnqObj.status==="rejected") {
-      if (this.myEnqObj.contactPhone) {
-        this.state.phoneValue = this.myEnqObj.contactPhone;
+    if (typeof this.jobObj !== 'undefined') {
+      //if (this.jobObj.status==="accepted" ||this.jobObj.status==="rejected") {
+      if (this.jobObj.contactPhone) {
+        this.state.phoneValue = this.jobObj.contactPhone;
       }
       this.alreadyApplied = true;
       //}
@@ -453,7 +453,7 @@ export default class Enquiry extends Component {
                           Your Enquiry message
                         </Text>
                         <TextInput
-                          value={this.myEnqObj.message}
+                          value={this.jobObj.message}
                           editable={false}
                           multiline={true}
                           maxLength={2000}
@@ -468,10 +468,10 @@ export default class Enquiry extends Component {
                           autoGrow={true}
                         />
                         <Text style={[styles.text, {fontWeight: 'bold'}]}>
-                          Decision: {this.myEnqObj.status}
+                          Decision: {this.jobObj.status}
                         </Text>
                         <TextInput
-                          value={this.myEnqObj.decisionMsg}
+                          value={this.jobObj.decisionMsg}
                           editable={false}
                           multiline={true}
                           maxLength={2000}
