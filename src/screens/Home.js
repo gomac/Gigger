@@ -16,7 +16,6 @@ import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MapInput from '../components/MapInput';
 import {refDataToMultiSLFormat} from '../Utils/helpers';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {testProperties} from '../Utils/TestProperties';
 import {GetJobsByUid, GetRefData} from '../model';
 
@@ -40,18 +39,18 @@ const Home = (props) => {
   if (global.appType === 'boss') {
     //[value, loading, error] = GetJobsByUid(global.UID);
   } else {
-    //[refData, loading, error] = GetRefData();
+    [refData, loading, error] = GetRefData();
   }
 
   //console.log('errors ', error);
 
   let outArr;
-  /*if (!refData) {
+  if (!refData) {
     // TODO user friendly message
     console.log('ref data not found');
   } else {
     outArr = refDataToMultiSLFormat(refData);
-  } */
+  }
 
   const getCoordsFromName = (loc) => {
     updateState({

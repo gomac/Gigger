@@ -135,8 +135,12 @@ export const GetJobIdsInLocation = (loc) => {
 };
 
 export const GetJobsByCriteriaLocation = (loc, jobTypeCodeArr) => {
-  GetJobIdsInLocation(loc).then((job_idArr) => {
-    GetJobsByCriteria(job_idArr, jobTypeCodeArr);
+  return new Promise((resolve, reject) => {
+    GetJobIdsInLocation(loc).then((job_idArr) => {
+      GetJobsByCriteria(job_idArr, jobTypeCodeArr).then((arr) => {
+        resolve(arr);
+      });
+    });
   });
 };
 
@@ -144,16 +148,16 @@ export const GetJobsByCriteriaLocation = (loc, jobTypeCodeArr) => {
 export const GetJobsByCriteria = (job_idArr, jobTypeCodeArr) => {
   return new Promise((resolve, reject) => {
     let outArr = [];
-
+    console.log('jobTypeCodeArr ', jobTypeCodeArr);
     firestore()
       .collection('jobs')
-
-      .where('job_id', 'array-contains-any', 'jobTypeCodeArr')
+      .where('selectedJobTypesArr', 'array-contains-any', jobTypeCodeArr)
       .orderBy('name')
       .get()
       .then((value) => {
         value.docs.map((doc) => {
           // find them in jobTypeCodeArr
+          console.log('doc ', doc);
           outArr.push(doc.data());
         });
         resolve(outArr);

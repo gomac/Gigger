@@ -16,6 +16,7 @@ import {
   GetUserApplicationsFronJobArr,
   GetUserJobs,
   GetJobsByJob_IdArr,
+  GetJobsByCriteriaLocation,
 } from '../model';
 import {merge} from 'lodash';
 
@@ -37,34 +38,37 @@ const Search = (props) => {
   useEffect(() => {
     setIsLoading(true);
     const region = props.route.params.region;
-    const loc =
+    const codeArr =
       typeof props.route.params.selectedJobTypes !== 'undefined'
         ? props.route.params.selectedJobTypes
         : [];
     const fetchData = async () => {
-      const jobDtlsArr = await GetJobsInLocationOnce(region, loc);
-
-      // now check if the user has already applied
-      if (global.appType === 'user') {
-        GetUserJobs(global.UID).then((arr) => {
-          GetJobsByJob_IdArr(arr).then((jobArr) => {
-            GetUserApplicationsFronJobArr(arr).then((arr2) => {
-              //merge elements
-              arr2.map((job) => {
-                var idx = jobDtlsArr.findIndex(
-                  (obj) => obj.job_id === job.job_id,
-                );
-                if (idx !== -1) {
-                  // merge if found
-                  var merged = Object.assign({}, jobDtlsArr[idx], job);
-                  jobDtlsArr[idx] = merged;
+      //const jobDtlsArr = await GetJobsInLocationOnce(region);
+      GetJobsByCriteriaLocation(region, codeArr).then((jobDtlsArr) => {
+        if (global.appType === 'user') {
+          GetUserJobs(global.UID).then((arr) => {
+            GetJobsByJob_IdArr(arr).then((jobArr) => {
+              // now check if the user has already applied
+              GetUserApplicationsFronJobArr(arr).then((arr2) => {
+                //merge elements
+                if (arr2.length > 0) {
+                  arr2.map((job) => {
+                    var idx = jobDtlsArr.findIndex(
+                      (obj) => obj.job_id === job.job_id,
+                    );
+                    if (idx !== -1) {
+                      // merge if found
+                      var merged = Object.assign({}, jobDtlsArr[idx], job);
+                      jobDtlsArr[idx] = merged;
+                    }
+                  });
                 }
               });
-              setData(jobDtlsArr);
             });
           });
-        });
-      }
+        }
+        setData(jobDtlsArr);
+      });
 
       //setData(jobDtlsArr);
       setIsLoading(false);

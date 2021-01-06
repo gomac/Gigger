@@ -32,7 +32,7 @@ const setI18nConfig = () => {
   i18n.locale = languageTag;
 };
 
-global.appType = 'boss';
+global.appType = 'user';
 global.job = '';
 global.requirement = '';
 global.requirements = [];
