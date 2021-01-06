@@ -57,7 +57,7 @@ export const updateApplicationDecision = ({enquiryObj}) => {
     .doc(job_id)
     .set(
       {
-        dchDO5TiWeeyhACosTW7wMNAybl2: {
+        __name__: {
           changedDate: Date.now(),
           decision: decision,
           decisionMsg: decisionMsg,

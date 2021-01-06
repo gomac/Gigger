@@ -7,12 +7,10 @@ import {
   View,
 } from 'react-native';
 import {Button} from '../components/Button';
-import {material} from 'react-native-typography';
 import moment from 'moment';
 import {ListItem} from 'react-native-elements';
 import {testProperties} from '../../src/Utils/TestProperties';
 import {GetJobsInLocationOnce} from '../model';
-import {dataToSectionListFormat} from '../Utils/helpers';
 import {StatusDisplay} from '../components/StatusDisplay';
 import {
   GetUserApplicationsFronJobArr,
@@ -48,14 +46,10 @@ const Search = (props) => {
 
       // now check if the user has already applied
       if (global.appType === 'user') {
-        let outArr = [];
         GetUserJobs(global.UID).then((arr) => {
           GetJobsByJob_IdArr(arr).then((jobArr) => {
             GetUserApplicationsFronJobArr(arr).then((arr2) => {
-              // console.log('jobDtlsArr ', jobDtlsArr);
-              // console.log('applications arr ', arr2);
               //merge elements
-
               arr2.map((job) => {
                 var idx = jobDtlsArr.findIndex(
                   (obj) => obj.job_id === job.job_id,
@@ -66,9 +60,7 @@ const Search = (props) => {
                   jobDtlsArr[idx] = merged;
                 }
               });
-
               setData(jobDtlsArr);
-              //console.log('outArr ', outArr);
             });
           });
         });

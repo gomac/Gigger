@@ -50,7 +50,6 @@ const Jobs = (props) => {
   // is that is does a useEffect inside and sets up a listener
   if (mode === 'bossJobs') {
     [value, loading, error] = GetJobsByUid(global.UID);
-  } else if (mode === 'applicant') {
   }
 
   const func = (acc, appln) => {
@@ -120,7 +119,7 @@ const Jobs = (props) => {
     } else {
       console.log('mode not found');
     }
-  }, []);
+  }, [value]);
 
   function renderRowButton(item) {
     const statusesObj = getByValue(aplnsCntsArr, item.job_id);

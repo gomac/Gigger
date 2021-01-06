@@ -81,8 +81,6 @@ const JobCategories = (props) => {
                 // using curried function to specialise
                 //onSelectedItemsChange={setSelectedJobTypes}
                 onSelectedItemsChange={(val) => {
-                  console.log('value ', value);
-                  console.log('selectedJobTypes ', selectedJobTypes);
                   onChange(val);
                   setSelectedJobTypes(val);
                 }}

@@ -89,16 +89,21 @@ export const updateJobBasic = ({jobObj}) => {
     });
 };
 
+const func = (acc, el) => {
+  return [...acc, el.id];
+};
+
 export const updateJobCategories = ({jobObj}) => {
   const {job_id, selectedJobTypesArr} = jobObj;
-  let obj = {};
-  selectedJobTypesArr.map((jobType) => {
-    obj[jobType.id] = jobType.title;
-  });
+
+  const jobCodesArr = selectedJobTypesArr.reduce(func, []);
+
   firestore()
     .collection('jobs')
     .doc(job_id)
-    .update({selectedJobTypesArr: obj})
+    .update({
+      selectedJobTypesArr: firestore.FieldValue.arrayUnion(...jobCodesArr),
+    })
     .then(() => {
       feedback('', '');
     })

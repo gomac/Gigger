@@ -134,61 +134,29 @@ export const GetJobIdsInLocation = (loc) => {
   });
 };
 
-export const GetJobsByCriteriaLocation = (loc, options) => {
-  GetJobsByCriteria(options);
-};
-// QUERY BY criteria
-export const GetJobsByCriteria = (criteria) => {
-  const job_idArr = [];
-
-  // a search can be
-  // by BOSS'S UID
-  // by applicant's UID
-  // a criteria which should include a location
-  let options = {
-    where: [
-      ['category', '==', 'someCategory'],
-      ['color', '==', 'red'],
-      ['author', '==', 'Sam'],
-    ],
-    orderBy: ['date', 'desc'],
-  };
-
-  //OR
-  // A single where
-  //
-  //let options = {where: ['category', '==', 'someCategory']};
-  const query = readDocuments(criteria);
-
-  const [value, loading, error] = useCollectionDataOnce(query, {
-    snapshotListenOptions: {includeMetadataChanges: true},
+export const GetJobsByCriteriaLocation = (loc, jobTypeCodeArr) => {
+  GetJobIdsInLocation(loc).then((job_idArr) => {
+    GetJobsByCriteria(job_idArr, jobTypeCodeArr);
   });
-
-  firestore().collection('jobs');
 };
 
-function readDocuments(collection, options = {}) {
-  let {where, orderBy, limit} = options;
-  let query = firestore().collection(collection);
+// QUERY BY criteria
+export const GetJobsByCriteria = (job_idArr, jobTypeCodeArr) => {
+  return new Promise((resolve, reject) => {
+    let outArr = [];
 
-  if (where) {
-    if (where[0] instanceof Array) {
-      // It's an array of array
-      for (let w of where) {
-        query = query.where(...w);
-      }
-    } else {
-      query = query.where(...where);
-    }
-  }
+    firestore()
+      .collection('jobs')
 
-  if (orderBy) {
-    query = query.orderBy(...orderBy);
-  }
-
-  if (limit) {
-    query = query.limit(limit);
-  }
-
-  return query;
-}
+      .where('job_id', 'array-contains-any', 'jobTypeCodeArr')
+      .orderBy('name')
+      .get()
+      .then((value) => {
+        value.docs.map((doc) => {
+          // find them in jobTypeCodeArr
+          outArr.push(doc.data());
+        });
+        resolve(outArr);
+      });
+  });
+};
