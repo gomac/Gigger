@@ -48,9 +48,6 @@ export const createUserRecord = (
 ) => {
   ////
   // 1 add user to database
-  const obj = {};
-  obj._id = info.user.uid;
-  //this.usersFromFB.update(obj);
   const newEmail = info.user.email;
 
   //obj.email = info.user.email;
@@ -64,11 +61,13 @@ export const createUserRecord = (
   newUser.phone = phone;
   newUser.uploadTotal = 0;
   newUser.status = 'registered';
+  newUser._id = info.user.uid;
+  newUser.role = global.appType === 'user' ? 'user' : 'boss';
   ////
   // pass the merge option to avoid overwriting the entire document
   firestore()
     .collection('users')
-    .doc(obj._id)
+    .doc(info.user.uid)
     .set(newUser, {merge: true})
 
     .then(() => {

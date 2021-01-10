@@ -36,21 +36,21 @@ const Home = (props) => {
   let error = null;
   let value = null;
   let refData = null;
+  let outArr;
   if (global.appType === 'boss') {
     //[value, loading, error] = GetJobsByUid(global.UID);
   } else {
     [refData, loading, error] = GetRefData();
+
+    if (!refData) {
+      // TODO user friendly message
+      //console.log('ref data not found');
+    } else {
+      outArr = refDataToMultiSLFormat(refData);
+    }
   }
 
   //console.log('errors ', error);
-
-  let outArr;
-  if (!refData) {
-    // TODO user friendly message
-    console.log('ref data not found');
-  } else {
-    outArr = refDataToMultiSLFormat(refData);
-  }
 
   const getCoordsFromName = (loc) => {
     updateState({

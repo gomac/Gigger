@@ -64,7 +64,7 @@ const Jobs = (props) => {
 
   useEffect(() => {
     if (mode === 'bossJobs') {
-      if (value) {
+      if (Array.isArray(value) && value.length) {
         //use job_id from jobs to get applications
         GetApplicationsByJobId(value).then((applnsArr) => {
           setApplications(applnsArr);
@@ -86,6 +86,9 @@ const Jobs = (props) => {
       let outArr = [];
       GetUserJobs(global.UID).then((arr) => {
         GetJobsByJob_IdArr(arr).then((jobDtlsArr) => {
+          if (!jobDtlsArr) {
+            return;
+          }
           GetUserApplicationsFronJobArr(arr).then((arr2) => {
             // console.log('jobDtlsArr ', jobDtlsArr);
             // console.log('applications arr ', arr2);

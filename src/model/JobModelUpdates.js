@@ -65,6 +65,7 @@ export const createNewJob = async ({jobObj}) => {
     })
     .catch((error) => {
       feedback(name, error);
+      console.log('name, error ', name, error);
     });
 
   console.log('inside updates and id is ', _id);
