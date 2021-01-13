@@ -406,12 +406,12 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                   rules={{
                     validate: {
                       minMoreThanMax: (value) => {
-                        console.log(
+                        /*                         console.log(
                           'minPayValue > value ',
                           jobObj.minPayValue,
                           ' ',
                           value,
-                        );
+                        ); */
                         return (
                           jobObj.minPayValue <= value ||
                           'Maximum cannot be less than Minimum'

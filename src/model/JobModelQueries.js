@@ -38,7 +38,7 @@ export const GetUserJobs = (UID) => {
   return new Promise((resolve, reject) => {
     firestore()
       .collection('users')
-      .doc(global.UID)
+      .doc(UID)
       .get()
       .then((querySnapshot) => {
         // pick job_ids into an array
@@ -137,9 +137,13 @@ export const GetJobIdsInLocation = (loc) => {
 export const GetJobsByCriteriaLocation = (loc, jobTypeCodeArr) => {
   return new Promise((resolve, reject) => {
     GetJobIdsInLocation(loc).then((job_idArr) => {
-      GetJobsByCriteria(job_idArr, jobTypeCodeArr).then((arr) => {
-        resolve(arr);
-      });
+      if (Array.isArray(jobTypeCodeArr) && jobTypeCodeArr.length > 0) {
+        GetJobsByCriteria(job_idArr, jobTypeCodeArr).then((arr) => {
+          resolve(arr);
+        });
+      } else {
+        resolve(job_idArr);
+      }
     });
   });
 };

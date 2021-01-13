@@ -441,7 +441,7 @@ const RootStackScreen = () => {
 
   return (
     <RootStack.Navigator headerMode="none">
-      {currentUser !== null && currentUser !== 'undefined' ? (
+      {currentUser !== null && typeof currentUser !== 'undefined' ? (
         <RootStack.Screen
           name="Drawer"
           component={DrawerScreen}

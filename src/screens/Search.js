@@ -43,12 +43,13 @@ const Search = (props) => {
         ? props.route.params.selectedJobTypes
         : [];
     const fetchData = async () => {
-      //const jobDtlsArr = await GetJobsInLocationOnce(region);
+      // 1  find job_ids in criteria
+      // 2  link the job details to the job_ids
+      //      there could be some still in jobLoc but old jobs
       GetJobsByCriteriaLocation(region, codeArr).then((jobDtlsArr) => {
-        if (global.appType === 'user') {
-          GetUserJobs(global.UID).then((arr) => {
-            GetJobsByJob_IdArr(arr).then((jobArr) => {
-              // now check if the user has already applied
+        GetJobsByJob_IdArr(jobDtlsArr).then((jobArr) => {
+          if (Array.isArray(jobArr) && jobArr.length > 0) {
+            GetUserJobs(global.UID).then((arr) => {
               GetUserApplicationsFronJobArr(arr).then((arr2) => {
                 //merge elements
                 if (arr2.length > 0) {
@@ -65,9 +66,12 @@ const Search = (props) => {
                 }
               });
             });
-          });
-        }
-        setData(jobDtlsArr);
+            setData(jobDtlsArr);
+          } else {
+            jobDtlsArr.length = 0;
+            setData(jobDtlsArr);
+          }
+        });
       });
 
       //setData(jobDtlsArr);
@@ -77,11 +81,25 @@ const Search = (props) => {
     fetchData();
   }, []);
 
-  console.log('data ', data);
-
-  /*  const renderItem = (item) => {
+  const renderItem = (item, index) => {
     return (
-      <View>
+      <ListItem
+        key={index}
+        rightElement={() => renderRowButton(item)}
+        onPress={() => {
+          enquire(item);
+        }}>
+        <ListItem.Content>
+          <ListItem.Title>
+            <View>
+              <Text style={styles.item}>{`${item.name.toUpperCase()}`}</Text>
+            </View>
+          </ListItem.Title>
+          <ListItem.Subtitle>{GetSubtitle(item)}</ListItem.Subtitle>
+        </ListItem.Content>
+      </ListItem>
+    );
+    /*       <View>
         <Text style={styles.item}>
           <B>{item?.terms?.workTerms}</B>
         </Text>
@@ -101,9 +119,8 @@ const Search = (props) => {
             <RED>*An introductory video is required</RED>
           </Text>
         )}
-      </View>
-    );
-  }; */
+      </View> */
+  };
 
   function renderRowButton(item) {
     return (
@@ -208,40 +225,22 @@ const Search = (props) => {
     });
   };
 
-  //const { myRequests } = props.navigation.state.params;
   return (
     <View>
       <View
         keyboardShouldPersistTaps={'handled'}
         {...testProperties('Search-screen')}>
         <View style={styles.container}>
-          {!data ? <Text style={styles.titleText}>No Jobs Found</Text> : null}
+          {!data || !data.length > 0 ? (
+            <Text style={styles.titleText}>No Jobs Found</Text>
+          ) : null}
           {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
           {data ? (
             <FlatList
               data={data}
               keyExtractor={(item, index) => index.toString()}
               ListHeaderComponent={renderHeader}
-              renderItem={({item, index}) => (
-                <ListItem
-                  key={index}
-                  rightElement={() => renderRowButton(item)}
-                  onPress={() => {
-                    enquire(item);
-                  }}>
-                  <ListItem.Content>
-                    <ListItem.Title>
-                      <View>
-                        <Text
-                          style={
-                            styles.item
-                          }>{`${item.name.toUpperCase()}`}</Text>
-                      </View>
-                    </ListItem.Title>
-                    <ListItem.Subtitle>{GetSubtitle(item)}</ListItem.Subtitle>
-                  </ListItem.Content>
-                </ListItem>
-              )}
+              renderItem={renderItem}
               ItemSeparatorComponent={renderSeparator}
               ListFooterComponent={renderFooter}
               refreshing={isLoading}
@@ -285,7 +284,9 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontFamily: 'Cochin',
+    color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
     paddingLeft: 10,
     paddingRight: 10,
     paddingTop: 10,
