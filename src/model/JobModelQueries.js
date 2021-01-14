@@ -43,7 +43,10 @@ export const GetUserJobs = (UID) => {
       .then((querySnapshot) => {
         // pick job_ids into an array
         let arr = [];
-        if (!querySnapshot) {
+        if (
+          !querySnapshot ||
+          typeof querySnapshot.data().jobs === 'undefined'
+        ) {
           resolve([]);
         } else {
           querySnapshot.data().jobs.map((job_id) => {

@@ -50,26 +50,28 @@ const Search = (props) => {
         GetJobsByJob_IdArr(jobDtlsArr).then((jobArr) => {
           if (Array.isArray(jobArr) && jobArr.length > 0) {
             GetUserJobs(global.UID).then((arr) => {
-              GetUserApplicationsFronJobArr(arr).then((arr2) => {
-                //merge elements
-                if (arr2.length > 0) {
-                  arr2.map((job) => {
-                    var idx = jobDtlsArr.findIndex(
-                      (obj) => obj.job_id === job.job_id,
-                    );
-                    if (idx !== -1) {
-                      // merge if found
-                      var merged = Object.assign({}, jobDtlsArr[idx], job);
-                      jobDtlsArr[idx] = merged;
-                    }
-                  });
-                }
-              });
+              if (Array.isArray(arr) && arr.length > 0) {
+                GetUserApplicationsFronJobArr(arr).then((arr2) => {
+                  //merge elements
+                  if (arr2.length > 0) {
+                    arr2.map((job) => {
+                      var idx = jobArr.findIndex(
+                        (obj) => obj.job_id === job.job_id,
+                      );
+                      if (idx !== -1) {
+                        // merge if found
+                        var merged = Object.assign({}, jobArr[idx], job);
+                        jobArr[idx] = merged;
+                      }
+                    });
+                  }
+                });
+              }
             });
-            setData(jobDtlsArr);
+            setData(jobArr);
           } else {
             jobDtlsArr.length = 0;
-            setData(jobDtlsArr);
+            setData(jobArr);
           }
         });
       });
@@ -81,7 +83,7 @@ const Search = (props) => {
     fetchData();
   }, []);
 
-  const renderItem = (item, index) => {
+  const renderItem = ({item, index}) => {
     return (
       <ListItem
         key={index}
@@ -92,34 +94,13 @@ const Search = (props) => {
         <ListItem.Content>
           <ListItem.Title>
             <View>
-              <Text style={styles.item}>{`${item.name.toUpperCase()}`}</Text>
+              <B style={styles.item}>{`${item.name.toUpperCase()}`}</B>
             </View>
           </ListItem.Title>
           <ListItem.Subtitle>{GetSubtitle(item)}</ListItem.Subtitle>
         </ListItem.Content>
       </ListItem>
     );
-    /*       <View>
-        <Text style={styles.item}>
-          <B>{item?.terms?.workTerms}</B>
-        </Text>
-        <Text style={styles.item}>
-          <B>Start date:</B> {item?.terms?.jobStartDate}
-        </Text>
-        <Text style={styles.item}>
-          <B>End date: </B>
-          {item.terms.jobEndDate}
-        </Text>
-        <Text style={styles.item}>
-          <B>Apply by:</B>
-          {item?.terms?.applicationEndDate}
-        </Text>
-        {item?.videoRqdBool && (
-          <Text style={styles.baseText}>
-            <RED>*An introductory video is required</RED>
-          </Text>
-        )}
-      </View> */
   };
 
   function renderRowButton(item) {
@@ -180,34 +161,53 @@ const Search = (props) => {
 
     //days old
     let diff = 0;
+    let startDate = '';
+    let endDate = '';
+    let enrollmentEndDate = '';
     if (typeof item.terms?.jobStartDate !== 'undefined') {
       const today = new Date();
       const end = moment(today);
-      const start = moment(item.terms.jobStartDate);
-      diff = end.diff(start, 'days');
+      startDate = moment(item.terms?.jobStartDate).format('DD/mM/YYYY');
+      endDate = moment(item.terms?.applicationEndDate).format('DD/mM/YYYY');
+      enrollmentEndDate = moment(item.terms?.applicationEndDate).format(
+        'DD/mM/YYYY',
+      );
+      diff = -1 * end.diff(item.terms?.jobStartDate, 'days');
     }
 
     return (
       <View>
-        <Text style={styles.baseText}>
-          <B>{item.terms?.workTerms} - </B>
-
-          {/*         <Text style={styles.baseText}>
+        {item.terms?.workTerms ? (
+          <Text style={styles.baseText}>
+            {item.terms?.workTerms ? <B>{item.terms?.workTerms} - </B> : null}
+            {/*         <Text style={styles.baseText}>
           <B>{item.location}</B>
         </Text> */}
-          {item.terms?.maxPayValue > 0 && (
-            <B>
-              {CURRENCY_SYMBOL}
-              {item.terms?.minPayValue} - {CURRENCY_SYMBOL}
-              {item.terms?.maxPayValue} {item.terms?.payFreq}
-            </B>
-          )}
-        </Text>
-        {/**<Text style={styles.item}><B>Start date:</B> {this.FormatUTCDateTime(Date.parse(item.statusDetails.jobStartDate))}</Text>*/}
+            {item.terms?.maxPayValue > 0 ? (
+              <B>
+                {CURRENCY_SYMBOL}
+                {item.terms?.minPayValue} - {CURRENCY_SYMBOL}
+                {item.terms?.maxPayValue} {item.terms?.payFreq}
+              </B>
+            ) : null}
+          </Text>
+        ) : null}
+        {/*         <Text style={styles.item}>
+          <B>Start date: </B>
+          {item.terms?.jobStartDate ? startDate : <B>TBA</B>}
+        </Text> */}
         <Text style={styles.smallText}>{diff}d ago</Text>
-        {/**<Text style={styles.item}><B>End date: </B>{this.FormatUTCDateTime(Date.parse(item.statusDetails.jobEndDate))}</Text>*/}
-        {/**<Text style={styles.smallText}>Apply by: <RED>{this.FormatUTCDateTime(Date.parse(item.statusDetails.applicationEndDate))}</RED></Text>*/}
-        <Text style={styles.baseText}>{item.description}</Text>
+        <Text style={styles.item}>
+          <B>End date: </B>
+          {item.terms?.jobEndDate ? endDate : <B>TBA</B>}
+        </Text>
+        <Text style={styles.smallText}>
+          Apply by:
+          {item.terms?.enrollmentEndDate ? enrollmentEndDate : <B>TBA</B>}
+        </Text>
+        {item.description ? (
+          <Text style={styles.baseText}>{item.description}</Text>
+        ) : null}
         {item.videoRqdBool && (
           <Text style={styles.baseText}>
             <RED>*An introductory video is required</RED>

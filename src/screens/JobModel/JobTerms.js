@@ -109,7 +109,7 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                       value === '' ? 'You must select the Contract Type' : '',
                   },
                 }} */
-                defaultValue={jobObj.workTerms}
+                defaultValue={() => (jobObj.workTerms ? jobObj.workTerms : '')}
                 render={({value, onChange, onBlur}) => (
                   <RNPickerSelect
                     placeholder={placeholder}
@@ -168,7 +168,11 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                   name="applicationEndDate"
                   control={control}
                   rules={{required: "'Apply until' is required"}}
-                  defaultValue={jobObj.applicationEndDate}
+                  defaultValue={() =>
+                    jobObj.applicationEndDate
+                      ? jobObj.applicationEndDate
+                      : new Date()
+                  }
                   render={({value, onChange, onBlur}) => (
                     <DatePicker
                       ref={refApplicationEndDate}
@@ -221,7 +225,9 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                   name="jobStartDate"
                   control={control}
                   rules={{required: "'Start Date' is required"}}
-                  defaultValue={jobObj.jobStartDate}
+                  defaultValue={() =>
+                    jobObj.jobStartDate ? jobObj.jobStartDate : new Date()
+                  }
                   render={({value, onChange, onBlur}) => (
                     <DatePicker
                       ref={refStartDate}
@@ -269,6 +275,9 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                 <Controller
                   name="jobEndDate"
                   control={control}
+                  defaultValue={() =>
+                    jobObj.jobEndDate ? jobObj.jobEndDate : new Date()
+                  }
                   rules={{
                     required: "End Date' is required",
                     validate: {
@@ -280,7 +289,6 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                       },
                     },
                   }}
-                  defaultValue={jobObj.jobEndDate}
                   render={({value, onChange, onBlur}) => (
                     <DatePicker
                       ref={refEndDate}
@@ -363,6 +371,9 @@ const JobTerms = (props, {} = {...initialJobData}) => {
               <Controller
                 name="minPayValue"
                 control={control}
+                defaultValue={() =>
+                  jobObj.minPayValue ? jobObj.minPayValue : 0
+                }
                 rules={{
                   validate: {
                     requiredIfPayfreq: (value) => {
@@ -373,7 +384,6 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                     },
                   },
                 }}
-                defaultValue={jobObj.minPayValue}
                 render={({value, onChange, onBlur}) => (
                   <CustomNumeric
                     ref={refMinPay}
@@ -403,6 +413,9 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                 <Controller
                   name="maxPayValue"
                   control={control}
+                  defaultValue={() =>
+                    jobObj.maxPayValue ? jobObj.maxPayValue : 0
+                  }
                   rules={{
                     validate: {
                       minMoreThanMax: (value) => {
@@ -419,7 +432,6 @@ const JobTerms = (props, {} = {...initialJobData}) => {
                       },
                     },
                   }}
-                  defaultValue={jobObj.maxPayValue}
                   render={({value, onChange, onBlur}) => (
                     <CustomNumeric
                       ref={refMaxPay}

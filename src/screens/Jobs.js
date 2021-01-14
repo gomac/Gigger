@@ -129,19 +129,22 @@ const Jobs = (props) => {
     return (
       <View>
         {global.appType === 'boss' ? (
-          <Button
-            text={'Applicants'}
-            accessibilityLabel="Applicants"
-            onPress={(job) => {
-              props.navigation.navigate('TileList', {
-                applicantEnqArr: applications[item.job_id],
-                job: item,
-                refreshRqd: this.refreshRqd,
-              });
-            }}
-            loading={loading}
-            type="small"
-          />
+          Array.isArray(applications) &&
+          typeof applications[item.job_id] !== 'undefined' && (
+            <Button
+              text={'Applicants'}
+              accessibilityLabel="Applicants"
+              onPress={(job) => {
+                props.navigation.navigate('TileList', {
+                  applicantEnqArr: applications[item.job_id],
+                  job: item,
+                  refreshRqd: this.refreshRqd,
+                });
+              }}
+              loading={loading}
+              type="small"
+            />
+          )
         ) : (
           <Button
             text={'Enquiries'}
