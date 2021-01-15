@@ -22,8 +22,6 @@ const Jobs = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [jobs, setjobs] = useState([]);
 
-  const mode = props.route?.params?.mode;
-
   // 3 MODES
   // 1 'bossJobs' for Boss - get jobs for boss UID
   // 2 'applicastions' - get jobs for applicant UID
@@ -34,7 +32,7 @@ const Jobs = (props) => {
   let value = null;
   // this fn calls the react-firebase-hooks. the only problem
   // is that is does a useEffect inside and sets up a listener
-  if (mode === 'bossJobs') {
+  if (global.appType === 'boss') {
     [value, loading, error] = GetJobsByUid(global.UID);
   }
 
@@ -49,7 +47,7 @@ const Jobs = (props) => {
   }
 
   useEffect(() => {
-    if (mode === 'bossJobs') {
+    if (global.appType === 'boss') {
       if (Array.isArray(value) && value.length) {
         //use job_id from jobs to get applications
         GetApplicationsByJobId(value).then((applnsArr) => {
@@ -68,7 +66,7 @@ const Jobs = (props) => {
         });
         setjobs(value);
       }
-    } else if (mode === 'applicant') {
+    } else if (global.appType === 'user') {
       let outArr = [];
       GetUserJobs(global.UID).then((arr) => {
         GetJobsByJob_IdArr(arr).then((jobDtlsArr) => {
@@ -90,23 +88,9 @@ const Jobs = (props) => {
           });
         });
       });
-    } else if (mode === 'search') {
-      setIsLoading(true);
-      const region = props.route.params.region;
-      const loc =
-        typeof props.route.params.selectedJobTypes !== 'undefined'
-          ? props.route.params.selectedJobTypes
-          : [];
-      const fetchData = async () => {
-        const arr = await GetJobsInLocationOnce(region, loc);
-
-        setjobs(arr);
-        setIsLoading(false);
-      };
-
-      fetchData();
-    } else {
-      console.log('mode not found');
+    }
+    {
+      console.log('global.appType not found');
     }
   }, [value]);
 

@@ -201,7 +201,6 @@ const Home = (props) => {
                     !region['latitude']
                       ? renderLoading
                       : props.navigation.navigate('Search', {
-                          mode: 'search',
                           region: region,
                           selectedJobTypes: selectedJobTypes,
                         });
@@ -212,7 +211,7 @@ const Home = (props) => {
                 <TouchableOpacity
                   style={styles.button}
                   onPress={() => {
-                    props.navigation.navigate('Jobs', {mode: 'applicant'});
+                    props.navigation.navigate('Jobs');
                   }}>
                   <Text style={styles.text}>My Enquiries</Text>
                 </TouchableOpacity>
@@ -231,7 +230,7 @@ const Home = (props) => {
                 <TouchableOpacity
                   style={styles.button}
                   onPress={() => {
-                    props.navigation.navigate('Jobs', {mode: 'bossJobs'});
+                    props.navigation.navigate('Jobs');
                   }}>
                   <Text style={styles.text}>My Jobs</Text>
                 </TouchableOpacity>
