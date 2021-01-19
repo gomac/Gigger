@@ -29,7 +29,7 @@ const setI18nConfig = () => {
     fallback;
 
   // clear translation cache
-  tr.cache.clear();
+  global.tr.cache.clear();
   // update layout direction
   I18nManager.forceRTL(isRTL);
   // set i18n-js config
@@ -38,6 +38,7 @@ const setI18nConfig = () => {
 };
 
 const App = () => {
+  setI18nConfig();
   return (
     <NetworkProvider>
       <ConnectionMsg />

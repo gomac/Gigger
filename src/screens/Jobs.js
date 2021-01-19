@@ -88,9 +88,8 @@ const Jobs = (props) => {
           });
         });
       });
-    }
-    {
-      console.log('global.appType not found');
+    } else {
+      console.log('global.appType not handled ', global.appType);
     }
   }, [value]);
 

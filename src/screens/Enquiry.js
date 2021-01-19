@@ -80,9 +80,9 @@ export default class Enquiry extends Component {
     this.jobObj = this.props.route.params.jobObj;
     //this.jobObj = Object.values(this.props.route.params.jobObj)[0];
 
-    if (typeof this.jobObj !== 'undefined') {
+    if (this.jobObj.status !== 'started') {
       //if (this.jobObj.status==="accepted" ||this.jobObj.status==="rejected") {
-      if (this.jobObj.contactPhone) {
+      if (typeof this.jobObj.contactPhone !== 'undefined') {
         this.state.phoneValue = this.jobObj.contactPhone;
       }
       this.alreadyApplied = true;
@@ -181,7 +181,7 @@ export default class Enquiry extends Component {
       const enquiryObj = {};
       enquiryObj.job_id = this.jobObj.job_id;
       enquiryObj.appliedDate = Date.now();
-      enquiryObj.name = global.displayName;
+      enquiryObj.applicantName = global.displayName;
       enquiryObj.status = 'pending';
       enquiryObj.message = this.state.myMessage;
       let today = new Date();
@@ -190,7 +190,6 @@ export default class Enquiry extends Component {
       //enquiryObj.endDate = endDate.setDate(today.getDate() + this.state.allowedViewDays)
       //enquiryObj.endDate = endDate.setDate(today.getDate() + this.state.allowedViewDays)
       //enquiryObj.noTimesToView = this.state.noTimesToView
-      enquiryObj.name = global.displayName;
       enquiryObj.messageType = 'text';
       enquiryObj.recording = false;
       enquiryObj.contactPhone = this.state.phoneValue;

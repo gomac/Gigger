@@ -191,9 +191,9 @@ class Request extends Component {
     if (!this.state.decisionMsg) {
       let placeholder;
       if (this.value == 2) {
-        placeholder = `Hi ${this.applicantEnqObj.name}. Thank you for your application. Unfortunaly, we can't offer you a position at this stage. Best wishes in your job search, ${global.displayName}`;
+        placeholder = `Hi ${this.applicantEnqObj.applicantName}. Thank you for your application. Unfortunaly, we can't offer you a position at this stage. Best wishes in your job search, ${global.displayName}`;
       } else if (this.value == 1) {
-        placeholder = `Hi ${this.applicantEnqObj.name}. I'm interested in your application. The process from here is as follows:
+        placeholder = `Hi ${this.applicantEnqObj.applicantName}. I'm interested in your application. The process from here is as follows:
 
 
 
@@ -235,7 +235,8 @@ class Request extends Component {
                   ).catch((err) => console.error('An error occurred', err));
                 }}
                 style={styles.phoneText}>
-                {this.applicantEnqObj.name}: {this.applicantEnqObj.contactPhone}
+                {this.applicantEnqObj.applicantName}:{' '}
+                {this.applicantEnqObj.contactPhone}
               </Text>
             </View>
 

@@ -7,6 +7,7 @@ import {
   GetJobsByJob_IdArr,
   GetJobsByCriteriaLocation,
 } from '../model';
+import {StatusDisplay} from '../components/StatusDisplay';
 import JobListView from '../components/JobListView';
 
 const Search = (props) => {
@@ -43,11 +44,12 @@ const Search = (props) => {
                         jobArr[idx] = merged;
                       }
                     });
+                    console.log('jobArr ', jobArr);
                   }
+                  setData(jobArr);
                 });
               }
             });
-            setData(jobArr);
           } else {
             jobDtlsArr.length = 0;
             setData(jobArr);
@@ -74,11 +76,18 @@ const Search = (props) => {
     return (
       <View>
         <Button
-          text={global.appType === 'boss' ? 'Applicants' : 'Enquire'}
+          text={item.status !== 'started' ? 'View' : 'Enquire'}
           onPress={() => enquire(item)}
           loading={props.isLoading}
           type="small"
         />
+        {item.status && (
+          <StatusDisplay
+            pendingNum={item.status === 'pending'}
+            rejectedNum={item.status === 'accepted'}
+            acceptedNum={item.status === 'rejected'}
+          />
+        )}
       </View>
     );
   }

@@ -98,151 +98,157 @@ const Home = (props) => {
       <SafeAreaView {...testProperties('List')} style={styles.bottomContainer}>
         <View style={{width: '100%'}} accessibilityLabel="home-view">
           <ScrollView keyboardShouldPersistTaps="handled">
-            {global.appType !== 'boss' ? (
-              <View>
-                <View
-                  style={{
-                    flex: 1,
-                    flexDirection: 'column',
-                    marginLeft: 20,
-                    marginRight: 20,
-                    marginTop: 20,
-                  }}>
-                  <Text style={styles.h3}>Where</Text>
-                  <MapInput
-                    {...testProperties('Location')}
-                    primeHome={true}
-                    style={{marginLeft: 10}}
-                    notifyChange={(loc) => getCoordsFromName(loc)}
-                  />
+            <View>
+              {global.appType !== 'boss' ? (
+                <View>
+                  <View
+                    style={{
+                      flex: 1,
+                      flexDirection: 'column',
+                      marginLeft: 20,
+                      marginRight: 20,
+                      marginTop: 20,
+                    }}>
+                    <Text style={styles.h3}>
+                      {global.tr('home.welcome', {
+                        appName: global.tr('appName'),
+                      })}
+                    </Text>
+                    <MapInput
+                      {...testProperties('Location')}
+                      primeHome={true}
+                      style={{marginLeft: 10}}
+                      notifyChange={(loc) => getCoordsFromName(loc)}
+                    />
+                  </View>
+                  <Text style={styles.h3}>What</Text>
+                  <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={styles.newContainer}>
+                    <SectionedMultiSelect
+                      {...testProperties('Category')}
+                      items={outArr}
+                      ref={MSListRef}
+                      uniqueKey="id"
+                      subKey="children"
+                      displayKey="title"
+                      autoFocus
+                      modalWithTouchable
+                      modalWithSafeAreaView
+                      // showCancelButton
+                      // headerComponent={this.SelectOrRemoveAll}
+                      // hideConfirm
+                      // filterItems={this.filterItems}
+                      // alwaysShowSelectText
+                      // customChipsRenderer={this.customChipsRenderer}
+                      chipsPosition="top"
+                      //searchAdornment={searchTerm => this.searchAdornment(searchTerm)}
+                      // noResultsComponent={this.noResults}
+                      //iconRenderer={this.icon}
+                      //  cancelIconComponent={<Text style={{color:'white'}}>Cancel</Text>}
+                      showDropDowns={true}
+                      expandDropDowns={true}
+                      animateDropDowns={true}
+                      readOnlyHeadings={false}
+                      selectText="Choose job categories..."
+                      single={false}
+                      showRemoveAll={true}
+                      parentChipsRemoveChildren={true}
+                      selectChildren={true}
+                      hideSearch={false}
+                      //  itemFontFamily={fonts.boldCondensed}
+                      // this isnt ideal but there are two update props. something's gotta give
+                      // using curried function to specialise
+                      //onSelectedItemsChange={setSelectedJobTypes}
+                      onSelectedItemsChange={setJobType}
+                      //onSelectedItemObjectsChange={onSelectedItemObjectsChange}
+                      selectedItems={selectedJobTypes}
+                      colors={{primary: '#5c3a9e', success: '#5c3a9e'}}
+                      itemNumberOfLines={3}
+                      selectLabelNumberOfLines={3}
+                      styles={{
+                        chipText: {
+                          maxWidth: Dimensions.get('screen').width - 90,
+                        },
+                        //itemText: {
+                        //  color: props.selectedJobTypes.length ? 'black' : 'lightgrey'
+                        //},
+                        selectedItemText: {
+                          color: 'blue',
+                        },
+                        //subItemText: {
+                        //  color: props.selectedJobTypes.length ? 'black' : 'lightgrey'
+                        //},
+                        item: {
+                          paddingHorizontal: 10,
+                        },
+                        subItem: {
+                          paddingHorizontal: 10,
+                        },
+                        selectedItem: {
+                          backgroundColor: 'rgba(0,0,0,0.1)',
+                        },
+                        selectedSubItem: {
+                          backgroundColor: 'rgba(0,0,0,0.1)',
+                        },
+                        // selectedSubItemText: {
+                        //   color: 'blue',
+                        // },
+                        scrollView: {paddingHorizontal: 0},
+                      }}
+                      // cancelIconComponent={<Icon size={20} name="close" style={{ color: 'white' }} />}
+                    />
+                  </ScrollView>
+                  <TouchableOpacity
+                    {...testProperties('Search-button')}
+                    style={styles.button}
+                    onPress={() => {
+                      !region['latitude']
+                        ? renderLoading
+                        : props.navigation.navigate('Search', {
+                            region: region,
+                            selectedJobTypes: selectedJobTypes,
+                          });
+                    }}>
+                    <Text style={styles.text}>Search Now</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {
+                      props.navigation.navigate('Jobs');
+                    }}>
+                    <Text style={styles.text}>My Enquiries</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.button}
+                    activeOpacity={0.6}
+                    onPress={() => {
+                      props.navigation.navigate('Recordings');
+                    }}>
+                    <Text style={styles.text}>My Recordings</Text>
+                  </TouchableOpacity>
                 </View>
-                <Text style={styles.h3}>What</Text>
-                <ScrollView
-                  keyboardShouldPersistTaps="handled"
-                  contentContainerStyle={styles.newContainer}>
-                  <SectionedMultiSelect
-                    {...testProperties('Category')}
-                    items={outArr}
-                    ref={MSListRef}
-                    uniqueKey="id"
-                    subKey="children"
-                    displayKey="title"
-                    autoFocus
-                    modalWithTouchable
-                    modalWithSafeAreaView
-                    // showCancelButton
-                    // headerComponent={this.SelectOrRemoveAll}
-                    // hideConfirm
-                    // filterItems={this.filterItems}
-                    // alwaysShowSelectText
-                    // customChipsRenderer={this.customChipsRenderer}
-                    chipsPosition="top"
-                    //searchAdornment={searchTerm => this.searchAdornment(searchTerm)}
-                    // noResultsComponent={this.noResults}
-                    //iconRenderer={this.icon}
-                    //  cancelIconComponent={<Text style={{color:'white'}}>Cancel</Text>}
-                    showDropDowns={true}
-                    expandDropDowns={true}
-                    animateDropDowns={true}
-                    readOnlyHeadings={false}
-                    selectText="Choose job categories..."
-                    single={false}
-                    showRemoveAll={true}
-                    parentChipsRemoveChildren={true}
-                    selectChildren={true}
-                    hideSearch={false}
-                    //  itemFontFamily={fonts.boldCondensed}
-                    // this isnt ideal but there are two update props. something's gotta give
-                    // using curried function to specialise
-                    //onSelectedItemsChange={setSelectedJobTypes}
-                    onSelectedItemsChange={setJobType}
-                    //onSelectedItemObjectsChange={onSelectedItemObjectsChange}
-                    selectedItems={selectedJobTypes}
-                    colors={{primary: '#5c3a9e', success: '#5c3a9e'}}
-                    itemNumberOfLines={3}
-                    selectLabelNumberOfLines={3}
-                    styles={{
-                      chipText: {
-                        maxWidth: Dimensions.get('screen').width - 90,
-                      },
-                      //itemText: {
-                      //  color: props.selectedJobTypes.length ? 'black' : 'lightgrey'
-                      //},
-                      selectedItemText: {
-                        color: 'blue',
-                      },
-                      //subItemText: {
-                      //  color: props.selectedJobTypes.length ? 'black' : 'lightgrey'
-                      //},
-                      item: {
-                        paddingHorizontal: 10,
-                      },
-                      subItem: {
-                        paddingHorizontal: 10,
-                      },
-                      selectedItem: {
-                        backgroundColor: 'rgba(0,0,0,0.1)',
-                      },
-                      selectedSubItem: {
-                        backgroundColor: 'rgba(0,0,0,0.1)',
-                      },
-                      // selectedSubItemText: {
-                      //   color: 'blue',
-                      // },
-                      scrollView: {paddingHorizontal: 0},
-                    }}
-                    // cancelIconComponent={<Icon size={20} name="close" style={{ color: 'white' }} />}
-                  />
-                </ScrollView>
-                <TouchableOpacity
-                  {...testProperties('Search-button')}
-                  style={styles.button}
-                  onPress={() => {
-                    !region['latitude']
-                      ? renderLoading
-                      : props.navigation.navigate('Search', {
-                          region: region,
-                          selectedJobTypes: selectedJobTypes,
-                        });
-                  }}>
-                  <Text style={styles.text}>Search Now</Text>
-                </TouchableOpacity>
+              ) : (
+                <View>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {
+                      props.navigation.navigate('Jobs');
+                    }}>
+                    <Text style={styles.text}>My Jobs</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={() => {
-                    props.navigation.navigate('Jobs');
-                  }}>
-                  <Text style={styles.text}>My Enquiries</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.button}
-                  activeOpacity={0.6}
-                  onPress={() => {
-                    props.navigation.navigate('Recordings');
-                  }}>
-                  <Text style={styles.text}>My Recordings</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View>
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={() => {
-                    props.navigation.navigate('Jobs');
-                  }}>
-                  <Text style={styles.text}>My Jobs</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={goToWizard}
-                  {...testProperties('Add-job-button')}>
-                  <Text style={styles.text}>New Job</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={goToWizard}
+                    {...testProperties('Add-job-button')}>
+                    <Text style={styles.text}>New Job</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
           </ScrollView>
         </View>
       </SafeAreaView>

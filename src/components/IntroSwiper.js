@@ -3,7 +3,7 @@ import {Image, StyleSheet, Text, View} from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import LinearGradient from 'react-native-linear-gradient';
 
-export default props => (
+export default (props) => (
   <AppIntroSlider
     renderItem={_renderItem}
     data={global.appType === 'boss' ? tbossSlides : tjobSlides}
@@ -28,7 +28,7 @@ const tjobSlides = [
   {
     key: 'one',
     title: 'TJob',
-    text: 'Welcom to TJob\n\nCreate an intro and\n do one-click applications.',
+    text: 'Welcome to TJob\n\nCreate an intro and\n do one-click applications.',
     image: require('../assets/email.png'),
     colors: ['#3F85A8', '#6d5a8e'],
   },
@@ -68,7 +68,7 @@ const tbossSlides = [
     key: 'one',
     title: 'TBoss',
     text:
-      'Welcom to TBoss\n\nCreate an intro and\n do one-click advertisements.',
+      'Welcome to TBoss\n\nCreate an intro and\n do one-click advertisements.',
     image: require('../assets/email.png'),
     colors: ['#3F85A8', '#6d5a8e'],
   },

@@ -8,7 +8,7 @@ export const updateApplication = ({enquiryObj}) => {
     appliedDate,
     status,
     message,
-    name,
+    applicantName,
     messageType,
     recording,
     contactPhone,
@@ -21,7 +21,7 @@ export const updateApplication = ({enquiryObj}) => {
       appliedDate: appliedDate,
       status: status,
       message: message,
-      name: name,
+      applicantName: applicantName,
       messageType: messageType,
       recording: recording,
       contactPhone: contactPhone,
@@ -38,14 +38,14 @@ export const updateApplication = ({enquiryObj}) => {
         .doc(global.UID)
         .update({jobs: firestore.FieldValue.arrayUnion(job_id)})
         .then(() => {
-          feedback(name, '');
+          feedback(applicantName, '');
         })
         .catch((error) => {
-          feedback(name, error);
+          feedback(applicantName, error);
         });
     })
     .catch((error) => {
-      feedback(name, error);
+      feedback(applicantName, error);
     });
 };
 
